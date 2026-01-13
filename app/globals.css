@@ -1,26 +1,499 @@
 @import "tailwindcss";
+/* @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap'); */
+
+/* =========================
+   PAPin Design Tokens
+   Mode: Default / Mode 1
+   ========================= */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-family-primary: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* ---------- Colors ---------- */
+  --color-primary: #FFAFCC;
+  --color-primary-hovered: #FA83AE;
+  --color-shadow-primary: rgba(255, 175, 204, 0.8);
+  --color-secondary: #FFC8DD;
+  --color-secondary-hovered: #FF9CC2;
+  --color-shadow-secondary: rgba(255, 200, 221, 0.8);
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-cream: #FFF5EE;
+  --color-soft-cream: #FFFDFB;
+  --color-gray: #535252;
+  --color-white: #FFFFFF;
+  --color-white-hovered: rgb(255, 242, 242);
+  --color-light-blue: #A2D2FF;
+
+  /* ---------- Font Sizes ---------- */
+  --font-xs: 12px;
+  --font-sm: 14px;
+  --font-md: 16px;
+  --font-lg: 18px;
+  --font-xl: 22px;
+  --font-2xl: 26px;
+  --font-3xl: 32px;
+  --font-4xl: 40px;
+
+  /* ---------- Spacing ---------- */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* ---------- Border Radius ---------- */
+  --radius-none: 0;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ----------- transition ------------- */
+
+  --btn-transition: 
+    background-color 0.2s ease-out,
+    color 0.2s ease-out,
+    box-shadow 0.2s ease-out,
+    transform 0.2s ease-out;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  font-family: var(--font-family-primary);
+  scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+
+@theme{
+  --color-primary: #FFAFCC;
+  --color-primary-hovered: #FA83AE;
+  --color-shadow-primary: rgba(255, 175, 204, 0.8);
+  --color-secondary: #FFC8DD;
+  --color-secondary-hovered: #FF9CC2;
+  --color-shadow-secondary: rgba(255, 200, 221, 0.8);
+  --color-shadow: rgba(0, 0, 0, 0.25);
+  --color-cream: #FFF5EE;
+  --color-soft-cream: #FFFDFB;
+  --color-gray: #535252;
+  --color-white: #FFFFFF;
+  --color-white-hovered: rgb(255, 242, 242);
+  --color-light-blue: #A2D2FF;
+
+  /* ---------- Spacing ---------- */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+}
+
+@layer utilities {
+  /* Menyembunyikan scrollbar untuk Chrome, Safari, dan Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Menyembunyikan scrollbar untuk IE, Edge, dan Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes softFloat {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-soft-float {
+  animation: softFloat 6s ease-in-out infinite;
+}
+
+.hovered-anim:hover {
+  animation: softFloat 6s ease-in-out infinite;
+}
+
+
+.animate-fade-up {
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-fade-scale {
+  animation: fadeScale 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Delay helpers */
+.delay-1 { animation-delay: 0.12s; }
+.delay-2 { animation-delay: 0.24s; }
+.delay-3 { animation-delay: 0.36s; }
+.delay-4 { animation-delay: 0.48s; }
+
+
+/* ================ buttons ================== */
+.btn{
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-md);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  text-align: center;
+  box-sizing: border-box;
+}
+.btn:disabled, 
+.btn.disabled {
+  cursor: not-allowed;
+  pointer-events: none; /* Mencegah hover dan click event */
+  box-shadow: none;     /* Menghilangkan shadow agar terlihat 'gepeng' */
+  opacity: 0.6;         /* Memberikan efek pudar */
+}
+
+/* 2. Override spesifik jika ingin warna benar-benar netral */
+.btn-primary-solid:disabled, 
+.btn-secondary-solid:disabled, 
+.btn-third-solid:disabled {
+  background-color: var(--color-disabled-bg, #e0e0e0);
+  color: var(--color-disabled-text, #9e9e9e);
+}
+
+.btn-primary-stroke:disabled, 
+.btn-secondary-stroke:disabled {
+  background-color: transparent;
+  border-color: var(--color-disabled-bg, #e0e0e0);
+  color: var(--color-disabled-text, #9e9e9e);
+}
+
+.btn-primary-solid{
+  background-color: var(--color-primary);  
+  color: var(--color-cream);
+  box-shadow: 0 3px 2px var(--color-secondary);
+  transition: var(--btn-transition);
+  
+}
+.btn-primary-solid:hover{
+  background-color: var(--color-primary-hovered);
+}
+
+.btn-secondary-solid{
+  background-color: var(--color-secondary);
+  color: var(--color-cream);
+  box-shadow: 0 3px 2px var(--color-primary);
+  transition: var(--btn-transition);
+  
+}
+.btn-secondary-solid:hover{
+  background-color: var(--color-secondary-hovered);
+}
+
+.btn-third-solid{
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  box-shadow: 0 3px 2px var(--color-shadow);
+  transition: var(--btn-transition);
+  
+}
+.btn-third-solid:hover{
+  background-color: var(--color-white-hovered);
+}
+
+.btn-primary-stroke{
+  background-color: var(--color-white);
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 3px 2px var(--color-secondary);
+  transition: var(--btn-transition);
+  
+}
+.btn-primary-stroke:hover{
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.btn-secondary-stroke{
+  background-color: var(--color-white);
+  border: 2px solid var(--color-secondary);
+  color: var(--color-primary);
+  box-shadow: 0 3px 2px var(--color-primary);
+  transition: var(--btn-transition);
+}
+.btn-secondary-stroke:hover{
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+}
+
+
+/* ==================== inputs ================= */
+.inp-primary-default{ /* input default*/
+  background-color: white;
+  min-width: 227px;
+  border: 2px solid var(--color-light-blue);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  outline: none;
+  box-shadow: 0 3px 2px var(--color-shadow);
+}
+
+.inp-primary-area{ /* input area default*/
+  background-color: white;
+  min-width: 327px;
+  border: 2px solid var(--color-light-blue);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  outline: none;
+  box-shadow: 0 3px 2px var(--color-shadow);
+}
+
+.inp-primary-select{ /* input select default*/
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: url('/assets/chevron-down.png') no-repeat right 18px center, #fff;
+  min-width: 227px;
+  border: 2px solid var(--color-light-blue);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  outline: none;
+  box-shadow: 0 3px 2px var(--color-shadow);
+}
+.inp-primary-select:focus {
+  outline: none;
+  border-color: #4A90FF;
+  background: url('/assets/chevron-up.png') no-repeat right 18px center, #fff;
+}
+.inp-primary-search{ /* input search default*/
+  background: url('/assets/magnifition.png') no-repeat 18px center, #fff;
+  padding-left: 40px; /* beri ruang untuk icon */
+  min-width: 227px;
+  border: 2px solid var(--color-light-blue);
+  border-radius: var(--radius-full);
+  padding: var(--spacing-md);
+  outline: none;
+}
+/* Hilang saat sudah ada value */
+.inp-primary-search:not(:placeholder-shown) {
+  background-image: none;
+}
+.inp-primary-search::placeholder{
+  padding-left: 25px;
+  font-weight: 500;
+}
+.inp-err-default{ /* input error*/
+  background-color: white;
+  min-width: 227px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  outline: none;
+  box-shadow: 0 3px 2px var(--color-shadow-primary);
+}
+.inp-err-default::placeholder{
+  font-weight: 500;
+}
+.inp-err-area{ /* input area error*/
+  background-color: white;
+  min-width: 327px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  outline: none;
+  box-shadow: 0 3px 2px var(--color-shadow-primary);
+}
+.inp-err-area::placeholder{
+  font-weight: 500;
+}
+.inp-err-select{ /* input select error*/
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: url('/assets/chevron-down.png') no-repeat right 18px center, #fff;
+  min-width: 227px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  outline: none;
+  box-shadow: 0 3px 2px var(--color-shadow-primary);
+}
+.inp-err-select:focus {
+  outline: none;
+  border-color: #4A90FF;
+  background: url('/assets/chevron-up.png') no-repeat right 18px center, #fff;
+}
+.inp-err-search{ /* input search error*/
+  background: url('/assets/magnifition.png') no-repeat 18px center, #fff;
+  padding-left: 40px; /* beri ruang untuk icon */
+  min-width: 227px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  padding: var(--spacing-md);
+  outline: none;
+  box-shadow: 0 3px 2px var(--color-shadow-primary);
+}
+/* Hilang saat sudah ada value */
+.inp-err-search:not(:placeholder-shown) {
+  background-image: none;
+}
+.inp-err-search::placeholder{
+  padding-left: 25px;
+  font-weight: 500;
+}
+.select-opt{ 
+  font-size: 14px;
+}
+.select-opt:checked {
+  background-color: #E8F1FF;
+  color: #1D4ED8;
+}
+.select-opt:not(:disabled) {
+  color: #1f2937;
+}
+
+/* =============== headers ================== */
+.header-primary-1{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-4xl);
+  color: var(--color-primary);
+}
+.header-primary-2{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-3xl);
+  color: var(--color-primary) ;
+}
+.header-primary-3{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-2xl);
+  color: var(--color-primary) ;
+}
+.header-primary-4{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-xl);
+  color: var(--color-primary) ;
+}
+.header-primary-5{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-lg);
+  color: var(--color-primary) ;
+}
+.header-primary-6{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-md);
+  color: var(--color-primary) ;
+}
+
+.header-white-1{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-4xl);
+  color: var(--color-white);
+}
+.header-white-2{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-3xl);
+  color: var(--color-white) ;
+}
+.header-white-3{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-2xl);
+  color: var(--color-white) ;
+}
+.header-white-4{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-xl);
+  color: var(--color-white) ;
+}
+.header-white-5{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-lg);
+  color: var(--color-white) ;
+}
+.header-white-6{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-md);
+  color: var(--color-white) ;
+}
+
+.header-black-1{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-4xl);
+  color: var(--color-black);
+}
+.header-black-2{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-3xl);
+  color: var(--color-black) ;
+}
+.header-black-3{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-2xl);
+  color: var(--color-black) ;
+}
+.header-black-4{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-xl);
+  color: var(--color-black) ;
+}
+.header-black-5{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-lg);
+  color: var(--color-black) ;
+}
+.header-black-6{
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-md);
+  color: var(--color-black) ;
+}
+/* ============== fonts ============= */
+.fonts-lg{
+  font-size: var(--font-lg);
+  font-weight: 400;
+}
+.fonts-md{
+  font-size: var(--font-md);
+  font-weight: 400;
+}
+.fonts-sm{
+  font-size: var(--font-sm);
+  font-weight: 400;
+}
+.fonts-xs{
+  font-size: var(--font-xs);
+  font-weight: 400;
+}
+
+.card-primary{
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-primary);
+  background-color: var(--color-soft-cream);
+}
+
+.card-secondary{
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-secondary);
+  background-color: var(--color-soft-cream);
 }
