@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Trash2, Edit3, Plus, Info, X, Gem, CheckCircle2 } from 'lucide-react';
+import { Trash2, Edit3, Plus, X, CheckCircle2 } from 'lucide-react';
 import PricingModal from '@/components/PricingModalProps';
 import { usePresetReactions, Preset } from '@/hooks/usePresetReactions';
 

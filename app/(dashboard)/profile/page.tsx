@@ -1,14 +1,18 @@
 "use client";
+
 export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
-  EyeOff, Eye, Camera, Save, Edit3, Lock, Loader2
+  EyeOff, Eye, Camera, Save, Edit3, Lock, Loader2, ArrowLeftCircle 
 } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPerson, faPersonDress } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from "@/hooks/useAuth"; 
 import { profileService } from "@/services/profileService";
+import { supabase } from "@/lib/supabase"; // Pastikan path ini benar
+import Link from 'next/link';
 
 interface UserProfile {
   id?: string;
@@ -18,22 +22,26 @@ interface UserProfile {
   hobbies?: string;
   bio?: string;
   photo_url?: string;
+  favorite_food?: string;
+  favorite_color?: string;
+  favorite_song?: string;
   [key: string]: any; 
 }
 
 function ProfileContent() {
-  const { user, updateUser} = useAuth();
+  const { user, updateUser } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const roleParam = searchParams.get('role');
   const activeGender = (roleParam === 'Woman' || roleParam === 'Man') ? roleParam : 'Man';
 
   const [showPairCode, setShowPairCode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Untuk proses saving
+  const [fetching, setFetching] = useState(true); // Untuk proses ambil data dari DB
   
-  // State untuk menyimpan file foto baru yang belum diupload
   const [pendingPhoto, setPendingPhoto] = useState<{file: File, preview: string} | null>(null);
 
   const [profileData, setProfileData] = useState<{ Man: UserProfile; Woman: UserProfile }>({
@@ -41,13 +49,39 @@ function ProfileContent() {
     Woman: {}
   });
 
-  useEffect(() => {
-    if (user && user.me) {
-      const dataA = user.me.role === 'A' ? user.me : (user.partner || {});
-      const dataB = user.me.role === 'B' ? user.me : (user.partner || {});
-      setProfileData({ Man: { ...dataA }, Woman: { ...dataB } });
+  // 1. Fungsi Fetch Data Langsung dari Database
+  const fetchLatestData = async () => {
+    if (!user?.me?.pair_id) return;
+    
+    try {
+      setFetching(true);
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('pair_id', user.me.pair_id);
+
+      if (error) throw error;
+
+      if (data) {
+        const manData = data.find(p => p.role === 'A') || {};
+        const womanData = data.find(p => p.role === 'B') || {};
+        
+        setProfileData({
+          Man: manData,
+          Woman: womanData
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching from DB:", err);
+    } finally {
+      setFetching(false);
     }
-  }, [user]);
+  };
+
+  // Trigger fetch saat pertama kali mount atau pair_id tersedia
+  useEffect(() => {
+    fetchLatestData();
+  }, [user?.me?.pair_id]);
 
   const currentProfile = profileData[activeGender];
   const isMyProfile = user?.me?.role === (activeGender === 'Man' ? 'A' : 'B');
@@ -59,18 +93,15 @@ function ProfileContent() {
     }));
   };
 
-  // 1. Handle pemilihan foto (Preview saja)
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) return alert("File maksimal 2MB");
-      
       const previewUrl = URL.createObjectURL(file);
       setPendingPhoto({ file, preview: previewUrl });
     }
   };
 
-  // 2. Handle Save (Upload foto + Update Data)
   const handleSave = async () => {
     if (!user?.me?.id) return alert("User ID tidak ditemukan");
     setLoading(true);
@@ -80,30 +111,29 @@ function ProfileContent() {
   
       if (pendingPhoto) {
         finalPhotoUrl = await profileService.uploadPhoto(
-          user.me.id, 
+          user.me.pair_id, 
           user.me.role, 
           pendingPhoto.file
         );
       }
   
-      // Data yang akan dikirim ke DB
       const updatedDataForDb = {
         ...currentProfile,
         photo_url: finalPhotoUrl
       };
   
-      // 2. Update data profile ke DB
+      // Update ke database
       await profileService.updateIndividualProfile(user.me.id, updatedDataForDb);
   
-      // 3. UPDATE SESSION LOKAL (PENTING!)
-      // Ini akan membuat UI langsung 'tahu' kalau foto/data sudah berubah
+      // Update session lokal useAuth agar Navbar ikut berubah
       updateUser(updatedDataForDb);
   
       alert("Profil berhasil diperbarui!");
       setIsEditing(false);
       setPendingPhoto(null);
       
-      // Opsional: router.refresh() untuk menyegarkan Server Components jika ada
+      // Re-fetch data untuk memastikan UI paling update
+      await fetchLatestData();
       router.refresh(); 
     } catch (err: any) {
       alert("Gagal menyimpan: " + err.message);
@@ -115,25 +145,23 @@ function ProfileContent() {
   const handleCancel = () => {
     setIsEditing(false);
     setPendingPhoto(null);
-    // Reset data dari session
-    if (user?.me) {
-        const dataA = user.me.role === 'A' ? user.me : (user.partner || {});
-        const dataB = user.me.role === 'B' ? user.me : (user.partner || {});
-        setProfileData({ Man: { ...dataA }, Woman: { ...dataB } });
-    }
+    fetchLatestData(); // Reset data ke versi database terbaru
   };
 
   if (!user) return <div className="p-10 text-center font-bold text-primary">Loading Auth Session...</div>;
 
+  if (fetching) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="animate-spin text-primary" size={40} />
+        <p className="text-primary font-bold animate-pulse">Syncing with Database...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 p-6">
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={handlePhotoSelect} 
-        accept="image/*" 
-        className="hidden" 
-      />
+      <input type="file" ref={fileInputRef} onChange={handlePhotoSelect} accept="image/*" className="hidden" />
       
       {/* HEADER SECTION */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -149,7 +177,6 @@ function ProfileContent() {
             )}
         </div>
         
-        {/* Role Switcher & Pair Code */}
         <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
           <div className="flex gap-3">
             {(['Man', 'Woman'] as const).map((g) => (
@@ -199,7 +226,6 @@ function ProfileContent() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
             <div className="md:col-span-5 flex flex-col items-center gap-4">
               <div className="relative group w-full max-w-[240px]">
-                {/* Image Preview Logic */}
                 <img 
                   src={pendingPhoto ? pendingPhoto.preview : (currentProfile.photo_url || "https://i.pravatar.cc/300")} 
                   alt="Profile" 
@@ -213,9 +239,6 @@ function ProfileContent() {
                     >
                         <Camera size={20} />
                     </button>
-                )}
-                {pendingPhoto && (
-                    <div className="absolute bottom-2 left-2 bg-primary text-white text-[10px] px-2 py-1 rounded-full font-bold">New Photo Ready</div>
                 )}
               </div>
             </div>
@@ -235,7 +258,7 @@ function ProfileContent() {
                   <label className="text-primary-hovered font-bold text-sm ml-2">Bio / Message</label>
                   <textarea 
                     disabled={!isEditing || !isMyProfile}
-                    value={currentProfile.bio || currentProfile.message || ''}
+                    value={currentProfile.bio || ''}
                     onChange={(e) => handleInputChange('bio', e.target.value)}
                     className={`w-full p-4 rounded-2xl border-2 outline-none min-h-30 resize-none transition-all ${
                       isEditing && isMyProfile
@@ -263,7 +286,6 @@ function ProfileContent() {
           )}
         </div>
 
-        {/* INFO CARD */}
         <div className="card-secondary h-fit sticky top-6">
           <h2 className="text-4xl md:text-5xl font-bold text-primary mb-8">Role Info</h2>
           <div className="space-y-6">
@@ -271,7 +293,7 @@ function ProfileContent() {
             <ul className="space-y-5">
               <TutorialStep number="1" text={`Kamu terdaftar sebagai Role ${user.me.role}.`} />
               <TutorialStep number="2" text={`Akses edit hanya terbuka untuk profil ${user.me.role === 'A' ? 'Man' : 'Woman'}.`} />
-              <TutorialStep number="3" text="Data yang kamu simpan akan langsung terlihat oleh pasanganmu." />
+              <TutorialStep number="3" text="Data diambil secara real-time dari database pusat." />
             </ul>
           </div>
         </div>
@@ -290,7 +312,7 @@ export default function ProfilePage() {
 
 function LabeledInput({ label, value, onChange, type = "text", isEditing }: any) {
   return (
-    <div className="flex flex-col gap-2 w-full transition-all">
+    <div className="flex flex-col gap-2 w-full">
       <label className="text-primary-hovered font-bold text-sm ml-2">{label}</label>
       <input 
         type={type}

@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Moon,
   Settings,
+  House,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link'; // Import Link untuk navigasi ke profil
@@ -27,6 +28,7 @@ export const SettingsDropdown = ({ isOpen, onClose, user }: SettingsDropdownProp
   if (!isOpen) return null;
 
   const menuItems = [
+    { icon: <House size={18} />, label: 'Dashboard', color: 'text-primary', bg: 'bg-purple-50', href: '/dashboard' },
     { 
       icon: <User size={18} />, 
       label: 'Profil Saya', 
@@ -36,7 +38,6 @@ export const SettingsDropdown = ({ isOpen, onClose, user }: SettingsDropdownProp
     },
     { icon: <Settings size={18} />, label: 'Pengaturan', color: 'text-gray-400', bg: 'bg-gray-100', href: '#' },
     { icon: <Bell size={18} />, label: 'Notifikasi', color: 'text-orange-400', bg: 'bg-orange-50', href: '#' },
-    { icon: <Moon size={18} />, label: 'Mode Gelap', color: 'text-purple-400', bg: 'bg-purple-50', href: '#' },
   ];
 
   // Perbaikan fungsi handleLogout

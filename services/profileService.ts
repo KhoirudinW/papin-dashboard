@@ -15,9 +15,9 @@ export const profileService = {
     return data;
   },
 
-  async uploadPhoto(userId: string, role: string, file: File) {
+  async uploadPhoto(pairId: string, role: string, file: File) {
     // Path: PAPimage/profile_photos/{id user}/{role}.jpg
-    const filePath = `profile-photos/${userId}/${role.toUpperCase()}.jpg`;
+    const filePath = `profile-photos/${pairId}/${role.toUpperCase()}.jpg`;
 
     const { error: uploadError } = await supabase.storage
       .from('PAPimage')

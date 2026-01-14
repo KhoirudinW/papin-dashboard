@@ -1,21 +1,13 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Lock } from 'lucide-react';
+import { Lock, CalendarDays, BarChart3 } from 'lucide-react';
 import PricingModal from '@/components/PricingModalProps';
+import { supabase } from '@/lib/supabase'; // Pastikan path ini benar
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from '@/hooks/useSubscription';
 
-
-// --- DATA DUMMY ---
-const papData = [
-  { day: 'Sen', man: 12, woman: 15 },
-  { day: 'Sel', man: 10, woman: 8 },
-  { day: 'Rab', man: 15, woman: 12 },
-  { day: 'Kam', man: 8, woman: 10 },
-  { day: 'Jum', man: 18, woman: 20 },
-  { day: 'Sab', man: 22, woman: 25 },
-  { day: 'Min', man: 20, woman: 18 },
-];
-
+// --- DUMMY UNTUK MOOD (PREMIUM) ---
 const moodData = [
   { name: 'Happy ✨', value: 45, color: '#FFC0D9' },
   { name: 'Romantic ❤️', value: 25, color: '#FF90BC' },
@@ -23,86 +15,143 @@ const moodData = [
   { name: 'Tired 😴', value: 15, color: '#FFF5F5' },
 ];
 
-const reactionData = [
-  { name: 'Love Icon', value: 50, color: '#FF90BC' },
-  { name: 'Fire Icon', value: 20, color: '#FFB6C1' },
-  { name: 'Laugh Icon', value: 30, color: '#FFF5F5' },
-];
-
 export default function StatistikPasangan() {
-  const [isPremium, setIsPremium] = useState(false); 
+  const { user } = useAuth();
   const [isPricingOpen, setIsPricingOpen] = useState(false);
+  const [viewType, setViewType] = useState<'weekly' | 'yearly'>('weekly');
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { isPremium, loading: subLoading } = useSubscription();
 
-  // Overlay hanya untuk kartu tertentu
+  // 1. Fetch Data dari Database (Tabel sesuai Gambar 2 & 4)
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user?.me?.pair_id) return;
+      
+      setLoading(true);
+      const table = viewType === 'weekly' ? 'weekly_stats' : 'yearly_stats';
+      
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .eq('pair_id', user.me.pair_id)
+        .order(viewType === 'weekly' ? 'week_start' : 'year', { ascending: true })
+        .limit(12); // Ambil data terbaru
+
+      if (!error && data) {
+        // Transform data untuk Chart
+        const formatted = data.map(item => ({
+          display: viewType === 'weekly' 
+            ? new Date(item.week_start).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})
+            : item.year.toString(),
+          pap: item.pap_count,
+          reaction: item.reaction_count
+        }));
+        setChartData(formatted);
+      }
+      setLoading(false);
+    };
+
+    fetchStats();
+  }, [user, viewType]);
+
   const LockOverlay = ({ title }: { title: string }) => (
-    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/5 backdrop-blur-xs p-6 text-center animate-in fade-in duration-500">
-      <div className="card-secondary shadow-md shadow-primary flex flex-col items-center max-w-70">
-        <div className="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-inner">
-          <Lock size={28} fill="currentColor" fillOpacity={0.2} />
-        </div>
-        <h6 className="header-black-6">Buka {title}</h6>
-        <p className="text-[10px] text-gray-400 font-bold mb-5 leading-relaxed">
-          Upgrade ke Premium untuk melihat statistik mood bulanan kalian.
-        </p>
-        <button 
-          onClick={() => setIsPricingOpen(true)}
-          className="btn btn-secondary-solid tracking-widest transition-transform active:scale-95"
-        >
-          Upgrade Sekarang
-        </button>
-      </div>
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md p-6 text-center animate-in fade-in duration-500 rounded-[2.5rem]">
+       <div className="card-secondary shadow-xl shadow-primary/10 flex flex-col items-center max-w-70 border-2 border-primary/20 bg-white/90">
+         <div className="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-inner">
+           <Lock size={28} fill="currentColor" fillOpacity={0.2} />
+         </div>
+         <h6 className="header-black-6">Buka {title}</h6>
+         <p className="text-[10px] text-gray-400 font-bold mb-5 leading-relaxed">
+           Upgrade ke Premium untuk melihat statistik mood bulanan kalian.
+         </p>
+         <button 
+           onClick={() => setIsPricingOpen(true)}
+           className="btn btn-secondary-solid tracking-widest transition-transform active:scale-95 text-[10px]"
+         >
+           Upgrade Sekarang
+         </button>
+       </div>
     </div>
   );
 
   return (
     <div className="p-6 space-y-6 min-h-screen">
-      <h2 className="header-primary-2 mb-5">Relationship Stats</h2>
-
-      {/* --- PAP EXCHANGE (TIDAK DI-LOCK) --- */}
-      <div className="card-secondary p-8 shadow-sm relative overflow-hidden">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="header-primary-5">PAP Exchange</h2>
-            <p className="text-xs text-gray-400">Jumlah foto yang dikirim 7 hari terakhir</p>
-          </div>
-          <button className="btn-secondary-stroke btn">Detail Foto</button>
+      <div className="flex justify-between items-center">
+        <h2 className="header-primary-2">Relationship Stats</h2>
+        {/* --- TOGGLE WEEKLY / YEARLY --- */}
+        <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200">
+          <button 
+            onClick={() => setViewType('weekly')}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${viewType === 'weekly' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
+          >
+            <CalendarDays size={14} /> Weekly
+          </button>
+          <button 
+            onClick={() => setViewType('yearly')}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${viewType === 'yearly' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
+          >
+            <BarChart3 size={14} /> Yearly
+          </button>
         </div>
+      </div>
+
+      {/* --- PAP & REACTION CHART (DINAMIS DARI DB) --- */}
+      <div className="card-secondary p-8 shadow-sm relative overflow-hidden">
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h2 className="header-primary-5">Activity Overview</h2>
+            <p className="text-xs text-gray-400">Statistik {viewType === 'weekly' ? 'Mingguan' : 'Tahunan'} kalian</p>
+          </div>
+          <div className="flex gap-4">
+             <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400">
+                <div className="w-3 h-3 bg-primary rounded-full" /> PAP
+             </div>
+             <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400">
+                <div className="w-3 h-3 bg-light-blue rounded-full" /> Reactions
+             </div>
+          </div>
+        </div>
+        
         <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={papData}>
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#FF90BC', fontWeight: 'bold'}} />
-              <YAxis hide />
-              <Tooltip cursor={{fill: '#FFF5F7'}} />
-              <Bar dataKey="man" name="Alex" fill="#A0D1FF" radius={[8, 8, 0, 0]} barSize={20} />
-              <Bar dataKey="woman" name="Sarah" fill="#FF90BC" radius={[8, 8, 0, 0]} barSize={20} />
-            </BarChart>
-          </ResponsiveContainer>
+          {loading ? (
+            <div className="h-full flex items-center justify-center text-primary font-bold animate-pulse">Loading Stats...</div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <XAxis dataKey="display" axisLine={false} tickLine={false} tick={{fill: '#FFAFCC', fontSize: 10, fontWeight: 'bold'}} />
+                <YAxis hide />
+                <Tooltip cursor={{fill: '#FFF5F7'}} contentStyle={{borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
+                <Bar dataKey="pap" name="PAP Sent" fill="#FFAFCC" radius={[6, 6, 0, 0]} barSize={viewType === 'weekly' ? 25 : 40} />
+                <Bar dataKey="reaction" name="Reactions" fill="#A0D1FF" radius={[6, 6, 0, 0]} barSize={viewType === 'weekly' ? 25 : 40} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* --- MOOD TRACKER (BAGIAN YANG DI-LOCK) --- */}
-        <div className="card-secondary p-8 shadow-sm relative overflow-hidden">
+        {/* --- MOOD TRACKER (LOCKED IF NOT PREMIUM) --- */}
+        <div className="card-secondary p-8 shadow-sm relative overflow-hidden min-h-[400px]">
           {!isPremium && <LockOverlay title="Monthly Mood" />}
           
-          <div className={`transition-all duration-700 ${!isPremium ? 'blur-md pointer-events-none opacity-50' : ''}`}>
+          <div className={`transition-all duration-700 ${!isPremium ? 'blur-md opacity-40 scale-95' : ''}`}>
             <h2 className="header-primary-5 mb-1">Monthly Mood</h2>
-            <p className="text-xs text-gray-400 mb-6">Mood harian kamu & pasangan</p>
+            <p className="text-xs text-gray-400 mb-6">Mood kalian bulan ini</p>
             <div className="flex flex-col items-center">
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
-                  <Pie data={moodData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                  <Pie data={moodData} innerRadius={70} outerRadius={90} paddingAngle={8} dataKey="value" stroke="none">
                     {moodData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
                   </Pie>
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="grid grid-cols-2 gap-4 mt-6 w-full px-4">
+              <div className="grid grid-cols-2 gap-4 mt-8 w-full">
                 {moodData.map((m) => (
-                  <div key={m.name} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{backgroundColor: m.color}} />
-                    <span className="text-[10px] text-gray-600 font-black uppercase tracking-tight">{m.name}</span>
+                  <div key={m.name} className="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                    <div className="w-3 h-3 rounded-full shadow-sm" style={{backgroundColor: m.color}} />
+                    <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest">{m.name}</span>
                   </div>
                 ))}
               </div>
@@ -110,32 +159,14 @@ export default function StatistikPasangan() {
           </div>
         </div>
 
-        {/* --- TOP REACTIONS (TIDAK DI-LOCK) --- */}
-        <div className="card-secondary p-8 shadow-sm">
-          <h2 className="header-primary-5 mb-1">Top Reactions</h2>
-          <p className="text-xs text-gray-400 mb-6">Reaksi yang paling sering dikirim</p>
-          <div className="flex flex-col items-center">
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={reactionData} innerRadius={0} outerRadius={80} dataKey="value">
-                  {reactionData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="grid grid-cols-1 gap-3 mt-6 w-full px-4">
-              {reactionData.map((r) => (
-                <div key={r.name} className="flex justify-between items-center text-[10px] font-bold">
-                  <span className="text-gray-500 uppercase">{r.name}</span>
-                  <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full" style={{width: `${r.value}%`, backgroundColor: r.color}} />
-                  </div>
-                </div>
-              ))}
+        {/* --- DUMMY INFO/TOP REACTIONS --- */}
+        <div className="card-secondary p-8 shadow-sm flex flex-col justify-center items-center text-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <BarChart3 className="text-primary" size={40} />
             </div>
-          </div>
+            <h3 className="header-primary-5">More Stats Coming Soon</h3>
+            <p className="text-xs text-gray-400 max-w-[200px]">Kami sedang menyiapkan statistik interaksi yang lebih mendalam untukmu.</p>
         </div>
-
       </div>
 
       <PricingModal isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} />

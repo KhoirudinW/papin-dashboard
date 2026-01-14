@@ -18,19 +18,9 @@ export const usePresetReactions = () => {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Dapatkan data pair pertama (karena tipe data adalah Array)
-  const currentPair = useMemo(() => {
-    return Array.isArray(pairs) && pairs.length > 0 ? pairs[0] : null;
-  }, [pairs]);
+  const currentPairId = user?.me?.pair_id
+  console.log(currentPairId);
   
-  
-  // 2. Ambil pair_id (String UUID) untuk filter query
-  const currentPairId = currentPair?.pair_id;
-  // 3. Cari data profil SAYA di dalam array users milik pair tersebut
-  const myProfile = useMemo(() => {
-    if (!currentPair?.users || !user?.me?.role) return null;
-    return currentPair.users.find((u: any) => u.role === user.me.role);
-  }, [currentPair, user]);
 
   // --- LOGIC FETCH ---
   const fetchPresets = async () => {
@@ -49,6 +39,8 @@ export const usePresetReactions = () => {
 
       if (error) throw error;
       setPresets(data || []);
+      console.log(data);
+      
     } catch (err) {
       console.error("Error fetching presets:", err);
     } finally {
@@ -123,7 +115,6 @@ export const usePresetReactions = () => {
     presets, 
     loading, 
     currentPairId, 
-    myProfile, 
     addPreset, 
     updatePreset, 
     deletePreset, 

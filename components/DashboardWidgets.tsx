@@ -43,9 +43,9 @@ export const PairCodeCard = () => (
         <Link href={'/profile'} className="w-full sm:w-auto btn btn-primary-stroke text-sm">
           Lihat Detail
         </Link>
-        <button className="w-full sm:w-auto btn btn-primary-solid text-sm">
+        <a href='/download' className="w-full sm:w-auto btn btn-primary-solid text-sm">
           Unduh Aplikasi
-        </button>
+        </a>
       </div>
       <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded-xl" />}>
         <GenderBtn />
