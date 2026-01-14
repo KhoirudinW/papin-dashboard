@@ -55,7 +55,9 @@ export const useStats = () => {
   };
 
   useEffect(() => {
-    fetchStats();
+    if (pairId) {
+      fetchStats();
+    }
   }, [pairId]);
 
   return { ...stats, loading, refresh: fetchStats };
