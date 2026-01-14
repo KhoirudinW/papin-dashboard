@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { StatCard, PresetCard, ChartCard, PairCodeCard } from '@/components/DashboardWidgets';
 import { faFaceSmile, faCamera, faFire } from '@fortawesome/free-solid-svg-icons';
 import { useStats } from '@/hooks/useStats';
+import { Suspense } from 'react';
 
 export default function DashboardPage() {
   const { totalPaps, currentStreak, totalPresets, loading } = useStats();
@@ -44,7 +45,9 @@ export default function DashboardPage() {
       {/* Barisan Tengah: Pair Code & Preset */}
       <div className="flex flex-col xl:flex-row gap-6 md:gap-8">
         <div className="w-full xl:w-1/2">
+        <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded-xl" />}>
           <PairCodeCard />
+        </Suspense>
         </div>
         <div className="w-full xl:w-1/2">
           <PresetCard />
