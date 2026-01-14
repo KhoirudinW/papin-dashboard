@@ -1,5 +1,5 @@
 "use client";
-
+export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
@@ -41,10 +41,9 @@ function ProfileContent() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Tambahkan di dalam ProfileContent
   useEffect(() => {
-    // Jika tidak ada parameter role di URL, arahkan otomatis berdasarkan role user
-    if (!roleParam && user?.me?.role) {
+    // Tambahkan pengecekan if (user) untuk keamanan ekstra
+    if (user && !roleParam && user?.me?.role) {
       const defaultRole = user.me.role === 'A' ? 'Man' : 'Woman';
       router.replace(`?role=${defaultRole}`, { scroll: false });
     }
