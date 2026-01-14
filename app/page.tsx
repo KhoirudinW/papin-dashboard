@@ -3,5 +3,5 @@ import { redirect } from 'next/navigation';
 
 export default function RootPage() {
   // Langsung arahkan ke /login yang ada di dalam grup (auth)
-  redirect('/(auth)/login');
+  redirect('/login');
 }
