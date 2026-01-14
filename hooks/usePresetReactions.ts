@@ -26,8 +26,6 @@ export const usePresetReactions = () => {
   
   // 2. Ambil pair_id (String UUID) untuk filter query
   const currentPairId = currentPair?.pair_id;
-  console.log(currentPairId);
-
   // 3. Cari data profil SAYA di dalam array users milik pair tersebut
   const myProfile = useMemo(() => {
     if (!currentPair?.users || !user?.me?.role) return null;
