@@ -1,5 +1,6 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
 import { StatCard, PresetCard, ChartCard, PairCodeCard } from '@/components/DashboardWidgets';
 import { faFaceSmile, faCamera, faFire } from '@fortawesome/free-solid-svg-icons';
 import { useStats } from '@/hooks/useStats';
