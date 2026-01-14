@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { PairCode } from './PairCode';
 import Link from 'next/link';
 import { GenderBtn } from './GenderBtn';
@@ -47,8 +47,9 @@ export const PairCodeCard = () => (
           Unduh Aplikasi
         </button>
       </div>
-
-      <GenderBtn/>
+      <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded-xl" />}>
+        <GenderBtn />
+      </Suspense>
     </div>
   );
 
