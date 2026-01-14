@@ -22,11 +22,10 @@ interface UserProfile {
 }
 
 function ProfileContent() {
-  const { user } = useAuth();
+  const { user, updateUser} = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
   const roleParam = searchParams.get('role');
   const activeGender = (roleParam === 'Woman' || roleParam === 'Man') ? roleParam : 'Man';
 
@@ -78,8 +77,7 @@ function ProfileContent() {
     
     try {
       let finalPhotoUrl = currentProfile.photo_url;
-
-      // Jika ada foto baru yang dipilih, upload dulu
+  
       if (pendingPhoto) {
         finalPhotoUrl = await profileService.uploadPhoto(
           user.me.id, 
@@ -87,18 +85,26 @@ function ProfileContent() {
           pendingPhoto.file
         );
       }
-
-      // Update data profile ke DB
-      await profileService.updateIndividualProfile(user.me.id, {
+  
+      // Data yang akan dikirim ke DB
+      const updatedDataForDb = {
         ...currentProfile,
         photo_url: finalPhotoUrl
-      });
-
+      };
+  
+      // 2. Update data profile ke DB
+      await profileService.updateIndividualProfile(user.me.id, updatedDataForDb);
+  
+      // 3. UPDATE SESSION LOKAL (PENTING!)
+      // Ini akan membuat UI langsung 'tahu' kalau foto/data sudah berubah
+      updateUser(updatedDataForDb);
+  
       alert("Profil berhasil diperbarui!");
       setIsEditing(false);
       setPendingPhoto(null);
-      router.refresh();
-      // Opsi: Jika ingin refresh session auth, tambahkan logic di sini
+      
+      // Opsional: router.refresh() untuk menyegarkan Server Components jika ada
+      router.refresh(); 
     } catch (err: any) {
       alert("Gagal menyimpan: " + err.message);
     } finally {

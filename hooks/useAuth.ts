@@ -41,6 +41,30 @@ export const useAuth = () => {
     router.push('/login');
   };
 
+  const updateUser = (newMeData: any) => {
+    const sessionStr = localStorage.getItem('papin_session');
+    if (sessionStr) {
+      const session = JSON.parse(sessionStr);
+      
+      // Susun data baru: gabungkan data lama dengan data baru yang diupdate
+      const updatedUserData = {
+        ...session.data,
+        me: { ...session.data.me, ...newMeData }
+      };
+  
+      const newSession = {
+        ...session,
+        data: updatedUserData
+      };
+  
+      // Simpan kembali ke localStorage agar saat refresh data tetap ada
+      localStorage.setItem('papin_session', JSON.stringify(newSession));
+      
+      // Update state global agar UI langsung berubah
+      setUser(updatedUserData);
+    }
+  };
+
   const loginWithHash = async (username: string, pairCodeInput: string) => {
     try {
       // 1. Ambil data pairs untuk pengecekan hash
@@ -103,5 +127,5 @@ export const useAuth = () => {
     }
   };
 
-  return { user, login, logout, loginWithHash };
+  return { user, login, logout, loginWithHash, updateUser };
 };
