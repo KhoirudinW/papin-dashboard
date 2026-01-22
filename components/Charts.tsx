@@ -16,9 +16,7 @@ function Charts() {
   const {
     chartData,
     loading,
-    error,
-    viewType,
-    setViewType,
+    error
   } = useDataChart();
 
   if (loading) {

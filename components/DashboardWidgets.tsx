@@ -7,6 +7,8 @@ import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PresetsComp from './PresetsComp';
 
+// export const dynamic = 'force-dynamic';
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -92,14 +94,14 @@ export const ChartCard = () => {
         </div>
         
         {/* Link ke halaman statistik utama */}
-        <Link href="/statistic">
-          <button className="btn btn-primary-stroke scale-90 hover:scale-100 transition-transform">
-            Lihat Detail
-          </button>
+        <Link href="/statistic" className="btn btn-primary-stroke scale-90 hover:scale-100 transition-transform">
+          Lihat Detail
         </Link>
       </div>
 
-      <Charts/>
+      <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded-xl" />}>
+        <Charts/>
+      </Suspense>
 
       {/* Legend Sederhana */}
       <div className="flex justify-center gap-6 mt-6">
