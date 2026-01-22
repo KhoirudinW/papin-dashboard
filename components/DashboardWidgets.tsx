@@ -107,11 +107,11 @@ export const ChartCard = () => {
       <div className="flex justify-center gap-6 mt-6">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-light-blue" />
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Alex</span>
+          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Pap</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-primary" />
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Sarah</span>
+          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Reaction</span>
         </div>
       </div>
     </div>
