@@ -13,6 +13,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { profileService } from "@/services/profileService";
 import { supabase } from "@/lib/supabase"; // Pastikan path ini benar
 import Link from 'next/link';
+import NoImage from "@/public/assets/NoImage.png"
+import { StaticImageData } from 'next/image';
 
 interface UserProfile {
   id?: string;
@@ -225,9 +227,9 @@ function ProfileContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
             <div className="md:col-span-5 flex flex-col items-center gap-4">
-              <div className="relative group w-full max-w-[240px]">
+              <div className="relative group w-full max-w-60">
                 <img 
-                  src={pendingPhoto ? pendingPhoto.preview : (currentProfile.photo_url || "https://i.pravatar.cc/300")} 
+                  src={pendingPhoto ? pendingPhoto.preview : (currentProfile.photo_url || NoImage.src)} 
                   alt="Profile" 
                   className={`w-full aspect-3/4 object-cover rounded-3xl shadow-lg border-4 ${pendingPhoto ? 'border-primary' : 'border-secondary'} transition-all`}
                 />

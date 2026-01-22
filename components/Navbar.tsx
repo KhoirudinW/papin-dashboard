@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import { SettingsDropdown as ModalAcc } from './ModalAcc';
 import { useAuth } from "@/hooks/useAuth"; 
-
+import NoImage from "@/public/assets/NoImage.png"
 const TopNavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -21,7 +21,7 @@ const TopNavBar: React.FC = () => {
     // Menambahkan timestamp t=... jika photo_url ada untuk menghindari cache browser di Navbar
     avatar: user?.me?.photo_url 
       ? `${user.me.photo_url}${user.me.photo_url.includes('?') ? '&' : '?'}t=${Date.now()}`
-      : "https://i.pravatar.cc/150?img=49", 
+      : NoImage.src, 
   };
 
   return (

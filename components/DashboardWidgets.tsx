@@ -5,6 +5,7 @@ import { GenderBtn } from './GenderBtn';
 import Charts from './Charts';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import PresetsComp from './PresetsComp';
 
 interface StatCardProps {
   title: string;
@@ -70,12 +71,9 @@ export const PresetCard = () => (
           </tr>
         </thead>
         <tbody className="text-[10px] md:text-xs">
-          {[1, 2].map((i) => (
-            <tr key={i} className="border-b last:border-0 hover:bg-pink-50/30 transition-colors">
-              <td className="p-3 border-r border-pink-50 font-medium text-gray-500">{i}</td>
-              <td className="p-3 whitespace-nowrap">"❤️", "😊", "👍", "😁", "😴", "😅", "👎", "🙄"</td>
-            </tr>
-          ))}
+            <Suspense>
+                <PresetsComp />
+            </Suspense>
         </tbody>
       </table>
     </div>

@@ -27,45 +27,65 @@ export const useRegister = () => {
 
   const registerPairs = async (you: ProfileFormData, partner: ProfileFormData) => {
     setLoading(true);
+  
+    if (you.role === partner.role) {
+      setLoading(false);
+      return { success: false, error: 'Role pasangan tidak boleh sama' };
+    }
+  
     const code = generatePairCode();
-    const salt = bcrypt.genSaltSync(10);
-    const hashedCode = bcrypt.hashSync(code, salt);
-
+    const hashedCode = bcrypt.hashSync(code, bcrypt.genSaltSync(10));
+  
     try {
-      // 1. Insert ke tabel pairs
+      // 1. Insert pair
       const { data: pair, error: pairErr } = await supabase
         .from('pairs')
         .insert([{ pair_code: hashedCode, streak: 0 }])
         .select()
         .single();
-
+  
       if (pairErr) throw pairErr;
-
-      // 2. Persiapkan data profil & Transform hobbies string ke Array
-      const usersToInsert = [
-        { 
-          ...you, 
-          pair_id: pair.id, 
-          role: you.role,
-          hobbies: formatHobbies(you.hobbies) // Transformasi di sini
-        },
-        { 
-          ...partner, 
-          pair_id: pair.id, 
-          role: partner.role,
-          hobbies: formatHobbies(partner.hobbies) // Transformasi di sini
-        }
+  
+      // 2. Insert profiles
+      const users = [
+        { ...you, pair_id: pair.id, hobbies: formatHobbies(you.hobbies) },
+        { ...partner, pair_id: pair.id, hobbies: formatHobbies(partner.hobbies) }
       ];
-
-      // 3. Insert ke user_profiles
-      const { error: profileErr } = await supabase
+  
+      const { data: profiles, error: profileErr } = await supabase
         .from('user_profiles')
-        .insert(usersToInsert);
-
+        .insert(users)
+        .select();
+  
       if (profileErr) throw profileErr;
-
+  
+      // 3. Build session (AUTO LOGIN)
+      const me = profiles.find((p: any) => p.role === you.role);
+      const partnerProfile = profiles.find((p: any) => p.role !== you.role);
+  
+      if (!me) throw new Error('Profil utama tidak ditemukan');
+  
+      const userData = {
+        me: {
+          ...me,
+          pair_id: pair.id,
+          pair_code: code
+        },
+        partner: partnerProfile || null,
+        streak: 0,
+        last_pap: null
+      };
+  
+      const session = {
+        timestamp: Date.now(),
+        data: userData
+      };
+  
+      localStorage.setItem('papin_session', JSON.stringify(session));
+  
       setPlainCode(code);
       return { success: true, code };
+  
     } catch (err: any) {
       console.error(err);
       return { success: false, error: err.message };
@@ -73,6 +93,7 @@ export const useRegister = () => {
       setLoading(false);
     }
   };
+  
 
   return { registerPairs, loading, plainCode };
 };

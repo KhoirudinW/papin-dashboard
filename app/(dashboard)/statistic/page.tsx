@@ -3,10 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Lock, CalendarDays, BarChart3 } from 'lucide-react';
 import PricingModal from '@/components/PricingModalProps';
-import { supabase } from '@/lib/supabase'; // Pastikan path ini benar
-import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from '@/hooks/useSubscription';
-
+import { useDataChart } from '@/hooks/useDataChart'
 // --- DUMMY UNTUK MOOD (PREMIUM) ---
 const moodData = [
   { name: 'Happy ✨', value: 45, color: '#FFC0D9' },
@@ -16,44 +14,9 @@ const moodData = [
 ];
 
 export default function StatistikPasangan() {
-  const { user } = useAuth();
   const [isPricingOpen, setIsPricingOpen] = useState(false);
-  const [viewType, setViewType] = useState<'weekly' | 'yearly'>('weekly');
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const { isPremium, loading: subLoading } = useSubscription();
-
-  // 1. Fetch Data dari Database (Tabel sesuai Gambar 2 & 4)
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (!user?.me?.pair_id) return;
-      
-      setLoading(true);
-      const table = viewType === 'weekly' ? 'weekly_stats' : 'yearly_stats';
-      
-      const { data, error } = await supabase
-        .from(table)
-        .select('*')
-        .eq('pair_id', user.me.pair_id)
-        .order(viewType === 'weekly' ? 'week_start' : 'year', { ascending: true })
-        .limit(12); // Ambil data terbaru
-
-      if (!error && data) {
-        // Transform data untuk Chart
-        const formatted = data.map(item => ({
-          display: viewType === 'weekly' 
-            ? new Date(item.week_start).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})
-            : item.year.toString(),
-          pap: item.pap_count,
-          reaction: item.reaction_count
-        }));
-        setChartData(formatted);
-      }
-      setLoading(false);
-    };
-
-    fetchStats();
-  }, [user, viewType]);
+  const {chartData, setViewType, viewType, loading } = useDataChart()
 
   const LockOverlay = ({ title }: { title: string }) => (
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md p-6 text-center animate-in fade-in duration-500 rounded-[2.5rem]">
@@ -132,7 +95,7 @@ export default function StatistikPasangan() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* --- MOOD TRACKER (LOCKED IF NOT PREMIUM) --- */}
-        <div className="card-secondary p-8 shadow-sm relative overflow-hidden min-h-[400px]">
+        <div className="card-secondary p-8 shadow-sm relative overflow-hidden min-h-100">
           {!isPremium && <LockOverlay title="Monthly Mood" />}
           
           <div className={`transition-all duration-700 ${!isPremium ? 'blur-md opacity-40 scale-95' : ''}`}>
@@ -165,7 +128,7 @@ export default function StatistikPasangan() {
                 <BarChart3 className="text-primary" size={40} />
             </div>
             <h3 className="header-primary-5">More Stats Coming Soon</h3>
-            <p className="text-xs text-gray-400 max-w-[200px]">Kami sedang menyiapkan statistik interaksi yang lebih mendalam untukmu.</p>
+            <p className="text-xs text-gray-400 max-w-50">Kami sedang menyiapkan statistik interaksi yang lebih mendalam untukmu.</p>
         </div>
       </div>
 
