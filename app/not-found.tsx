@@ -1,7 +1,11 @@
+"use client"; // Wajib ditambahkan di baris pertama untuk menggunakan useRouter
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+
 
 export default function NotFound() {
+  const router = useRouter()
   return (
     <div className="min-h-screen  flex flex-col justify-center items-center bg-cream px-6 text-center">
       {/* Ilustrasi opsional */}
@@ -23,12 +27,12 @@ export default function NotFound() {
         Tidak apa-apa, mari kembali ke tempat yang familiar.
       </p>
 
-      <Link
-        href="/"
+      <button
+        onClick={()=>router.back()}
         className="btn btn-primary-solid"
       >
         Kembali ke Beranda
-      </Link>
+      </button>
     </div>
   );
 }

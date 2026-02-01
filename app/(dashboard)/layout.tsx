@@ -6,6 +6,8 @@ import TopNav from "@/components/Navbar";
 import { Menu, X } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
+
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 

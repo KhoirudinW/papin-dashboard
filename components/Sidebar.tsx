@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHouse, faChartColumn, faUserGroup, faFaceSmile, faCalendarDays, faCircleExclamation, faHandshake, faClockRotateLeft, faNewspaper, faHeadset, faShieldHeart } from '@fortawesome/free-solid-svg-icons'
+import { faHouse, faChartColumn, faUserGroup, faFaceSmile, faCalendarDays, faCircleExclamation, faHandshake, faClockRotateLeft, faNewspaper, faHeadset, faShieldHeart, faGear } from '@fortawesome/free-solid-svg-icons'
 import { useAuth } from '@/hooks/useAuth'; 
 
 const Sidebar = () => {
@@ -22,11 +22,12 @@ const Sidebar = () => {
     { name: 'Changelog', icon: <FontAwesomeIcon icon={faCircleExclamation} className="w-5 h-5" />, href: '/changelog' },
     // { name: 'Komunitas', icon: <FontAwesomeIcon icon={faHandshake} className="w-5 h-5"/>, href: '/komunitas' },
     // { name: 'Perjalanan', icon: <FontAwesomeIcon icon={faClockRotateLeft} />, href: '/perjalanan' },
+    { name: 'Settings', icon: <FontAwesomeIcon icon={faGear} />, href: '/settings' },
   ];
 
   const bottomItems = [
     { name: 'Customer service', icon: <FontAwesomeIcon icon={faHeadset} className="w-5 h-5"/>, href: '/cs' },
-    { name: 'Privacy & Policy', icon: <FontAwesomeIcon icon={faShieldHeart} className="w-5 h-5"/>, href: '/privacy' },
+    { name: 'Privacy & Policy', icon: <FontAwesomeIcon icon={faShieldHeart} className="w-5 h-5"/>, href: '/settings/privacy' },
   ];
 
   return (
