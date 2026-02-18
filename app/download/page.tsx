@@ -7,7 +7,7 @@ import { BackButton } from '@/components/BackButton';
 export default function DownloadPage() {
   const downloadAPK = () => {
     // Ganti dengan URL link APK yang sudah kamu upload ke Supabase Storage atau hosting lain
-    window.location.href = "https://your-storage-link.com/papin-latest.apk";
+    window.location.href = "github.com/KhoirudinW/papin-dashboard/releases/latest";
   };
 
   return (
