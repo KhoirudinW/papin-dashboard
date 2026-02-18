@@ -41,7 +41,7 @@ export default function DownloadPage() {
                 <Download size={24} /> Download APK
               </button>
               <div className="flex flex-col justify-center">
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Version 1.0.0 (Stable)</span>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Version 1.0.0-beta.1 (early access)</span>
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Size: ~120 MB</span>
               </div>
             </div>
