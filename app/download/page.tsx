@@ -1,13 +1,14 @@
 "use client";
 import React from 'react';
-import { Download, Smartphone, ShieldCheck, Zap, Info, ArrowLeftCircle } from 'lucide-react';
+import { Download, Smartphone, ShieldCheck, Zap, Info } from 'lucide-react';
 import Navbar from '@/components/Navbar'; // Sesuaikan path navbar kamu
 import { BackButton } from '@/components/BackButton';
 
+const APK_RELEASE_URL = "https://github.com/KhoirudinW/papin-dashboard/releases/download/v1.0.0-beta.1/PAPin-v1.0.0-beta.1.apk";
+
 export default function DownloadPage() {
   const downloadAPK = () => {
-    // Ganti dengan URL link APK yang sudah kamu upload ke Supabase Storage atau hosting lain
-    window.location.href = "github.com/KhoirudinW/papin-dashboard/releases/latest";
+    window.location.href = APK_RELEASE_URL;
   };
 
   return (
@@ -101,7 +102,7 @@ export default function DownloadPage() {
             <div className="space-y-3">
               <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center font-black text-gray-500 text-sm">2</div>
               <h4 className="font-black text-gray-700 uppercase text-xs">Izinkan Sumber Tidak Dikenal</h4>
-              <p className="text-[11px] text-gray-400 font-bold leading-relaxed">Buka Pengaturan HP {`>`} Keamanan {`>`} Aktifkan 'Instal Aplikasi dari sumber tidak dikenal'.</p>
+              <p className="text-[11px] text-gray-400 font-bold leading-relaxed">Buka Pengaturan HP {`>`} Keamanan {`>`} Aktifkan &apos;Instal Aplikasi dari sumber tidak dikenal&apos;.</p>
             </div>
             <div className="space-y-3">
               <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center font-black text-gray-500 text-sm">3</div>
