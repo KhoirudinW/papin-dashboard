@@ -12,6 +12,11 @@ const poppins = Poppins({
   variable: '--font-primary',
 })
 
+const isMidtransProduction = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true";
+const midtransSnapSrc = isMidtransProduction
+  ? "https://app.midtrans.com/snap/snap.js"
+  : "https://app.sandbox.midtrans.com/snap/snap.js";
+
 export const metadata: Metadata = {
   title: {
     default: "Papin Dashboard",
@@ -89,7 +94,7 @@ export default function RootLayout({
       >
         {children}
         <Script 
-          src="https://app.sandbox.midtrans.com/snap/snap.js" 
+          src={midtransSnapSrc}
           data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
           strategy="afterInteractive"
         />

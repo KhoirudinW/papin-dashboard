@@ -1,31 +1,44 @@
-import { useAuth } from './useAuth';
-import { usePairProfiles } from './usePairProfiles';
+import { useAuth } from "./useAuth";
+import { usePairProfiles } from "./usePairProfiles";
+import type { PairWithProfile } from "@/types/supabase";
+
+const INITIAL_RENDER_TIME_MS = Date.now();
 
 export const useSubscription = () => {
   const { user } = useAuth(); // Ambil pair_id dari auth
   const { pairs, loading: pairLoading } = usePairProfiles();
 
   // Cari data pair yang spesifik berdasarkan pair_id di useAuth
-  const myPairData = pairs.find((p: any) => p.pair_id === user?.me?.pair_id);
+  const myPairData = pairs.find((pair: PairWithProfile) => pair.pair_id === user?.me?.pair_id);
 
   // Ambil data subscription dari pair yang ditemukan
   const subscription = myPairData?.subscription;
-  
-  // Logic penentuan status Premium/Pro
-  const isPremium = subscription?.status === 'active' && 
-                    (subscription?.plan?.name.toLowerCase() === 'pro' || 
-                     subscription?.plan?.name.toLowerCase() === 'premium');
+  const hasValidStatus = subscription?.status === "active";
 
-                     console.log(myPairData);
-                     
+  const endTime = subscription?.end_date ? new Date(subscription.end_date).getTime() : null;
+  const hasEndDate = typeof endTime === "number" && !Number.isNaN(endTime);
+  const isWithinEndDate = !hasEndDate || (endTime as number) > INITIAL_RENDER_TIME_MS;
+
+  const isSubscriptionActive = Boolean(hasValidStatus && isWithinEndDate);
+  const normalizedPlanName = subscription?.plan?.name?.toLowerCase() || "basic";
+
+  // Logic penentuan status Premium/Pro
+  const isPremium =
+    isSubscriptionActive && (normalizedPlanName === "pro" || normalizedPlanName === "premium");
+
+  let daysRemaining = 0;
+  if (hasEndDate) {
+    daysRemaining = Math.max(
+      0,
+      Math.ceil(((endTime as number) - INITIAL_RENDER_TIME_MS) / (1000 * 3600 * 24)),
+    );
+  }
+
   return {
     isPremium,
-    planName: subscription?.plan?.name || 'basic',
+    planName: isSubscriptionActive ? subscription?.plan?.name || "basic" : "basic",
     features: subscription?.plan?.features || {},
-    // Memberikan info sisa hari jika diperlukan untuk UI
-    daysRemaining: subscription?.end_date 
-      ? Math.ceil((new Date(subscription.end_date).getTime() - Date.now()) / (1000 * 3600 * 24)) 
-      : 0,
-    loading: pairLoading
+    daysRemaining,
+    loading: pairLoading,
   };
 };
