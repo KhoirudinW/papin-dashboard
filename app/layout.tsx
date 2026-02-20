@@ -12,10 +12,18 @@ const poppins = Poppins({
   variable: '--font-primary',
 })
 
-const isMidtransProduction = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true";
+const parseBooleanEnv = (value: string | undefined) => value?.trim().toLowerCase() === "true";
+const midtransClientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY?.trim() || "";
+const explicitMidtransMode = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION;
+const inferredMidtransProduction = midtransClientKey ? !midtransClientKey.startsWith("SB-") : false;
+const isMidtransProduction =
+  typeof explicitMidtransMode === "string" && explicitMidtransMode.trim() !== ""
+    ? parseBooleanEnv(explicitMidtransMode)
+    : inferredMidtransProduction;
 const midtransSnapSrc = isMidtransProduction
   ? "https://app.midtrans.com/snap/snap.js"
   : "https://app.sandbox.midtrans.com/snap/snap.js";
+const googleAnalyticsMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
   title: {
@@ -76,7 +84,7 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
 };
@@ -88,14 +96,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body
         className={`${poppins.variable} antialiased`}
       >
         {children}
+        {googleAnalyticsMeasurementId ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${googleAnalyticsMeasurementId}');
+              `}
+            </Script>
+          </>
+        ) : null}
         <Script 
           src={midtransSnapSrc}
-          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          data-client-key={midtransClientKey || undefined}
           strategy="afterInteractive"
         />
       </body>

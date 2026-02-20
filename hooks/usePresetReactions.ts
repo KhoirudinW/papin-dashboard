@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './useAuth';
-import { usePairProfiles } from './usePairProfiles';
 
 export interface Preset {
   id: string;
@@ -14,16 +13,14 @@ export interface Preset {
 
 export const usePresetReactions = () => {
   const { user } = useAuth();
-  const { pairs } = usePairProfiles();
   const [presets, setPresets] = useState<Preset[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const currentPairId = user?.me?.pair_id
-  console.log(currentPairId);
+  const currentPairId = user?.me?.pair_id;
   
 
   // --- LOGIC FETCH ---
-  const fetchPresets = async () => {
+  const fetchPresets = useCallback(async () => {
     if (!currentPairId) {
       setLoading(false);
       return;
@@ -39,18 +36,17 @@ export const usePresetReactions = () => {
 
       if (error) throw error;
       setPresets(data || []);
-      console.log(data);
       
     } catch (err) {
       console.error("Error fetching presets:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPairId]);
 
   useEffect(() => {
-    fetchPresets();
-  }, [currentPairId]);
+    void fetchPresets();
+  }, [fetchPresets]);
 
   // --- LOGIC CRUD ---
   const addPreset = async (name: string, emojis: string[]) => {

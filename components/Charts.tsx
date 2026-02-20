@@ -44,9 +44,9 @@ function Charts() {
   }
 
   return (
-    <div className="h-64 w-full">
+    <div className="h-64 w-full min-w-0">
 
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <BarChart
           data={chartData}
           margin={{ top: 0, right: 0, left: -25, bottom: 0 }}

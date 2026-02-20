@@ -26,7 +26,7 @@ const Sidebar = () => {
   ];
 
   const bottomItems = [
-    { name: 'Customer service', icon: <FontAwesomeIcon icon={faHeadset} className="w-5 h-5"/>, href: '/cs' },
+    { name: 'Customer service', icon: <FontAwesomeIcon icon={faHeadset} className="w-5 h-5"/>, href: 'https://www.papin.biz.id/contact' },
     { name: 'Privacy & Policy', icon: <FontAwesomeIcon icon={faShieldHeart} className="w-5 h-5"/>, href: '/settings/privacy' },
   ];
 

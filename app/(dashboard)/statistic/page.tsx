@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Lock, CalendarDays, BarChart3 } from 'lucide-react';
 import PricingModal from '@/components/PricingModalProps';
@@ -13,30 +13,30 @@ const moodData = [
   { name: 'Tired 😴', value: 15, color: '#FFF5F5' },
 ];
 
+const LockOverlay = ({ title, onUpgrade }: { title: string; onUpgrade: () => void }) => (
+  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md p-6 text-center animate-in fade-in duration-500 rounded-[2.5rem]">
+     <div className="card-secondary shadow-xl shadow-primary/10 flex flex-col items-center max-w-70 border-2 border-primary/20 bg-white/90">
+       <div className="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-inner">
+         <Lock size={28} fill="currentColor" fillOpacity={0.2} />
+       </div>
+       <h6 className="header-black-6">Buka {title}</h6>
+       <p className="text-[10px] text-gray-400 font-bold mb-5 leading-relaxed">
+         Upgrade ke Premium untuk melihat statistik mood bulanan kalian.
+       </p>
+       <button 
+         onClick={onUpgrade}
+         className="btn btn-secondary-solid tracking-widest transition-transform active:scale-95 text-[10px]"
+       >
+         Upgrade Sekarang
+       </button>
+     </div>
+  </div>
+);
+
 export default function StatistikPasangan() {
   const [isPricingOpen, setIsPricingOpen] = useState(false);
-  const { isPremium, loading: subLoading } = useSubscription();
+  const { isPremium } = useSubscription();
   const {chartData, setViewType, viewType, loading } = useDataChart()
-
-  const LockOverlay = ({ title }: { title: string }) => (
-    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md p-6 text-center animate-in fade-in duration-500 rounded-[2.5rem]">
-       <div className="card-secondary shadow-xl shadow-primary/10 flex flex-col items-center max-w-70 border-2 border-primary/20 bg-white/90">
-         <div className="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-inner">
-           <Lock size={28} fill="currentColor" fillOpacity={0.2} />
-         </div>
-         <h6 className="header-black-6">Buka {title}</h6>
-         <p className="text-[10px] text-gray-400 font-bold mb-5 leading-relaxed">
-           Upgrade ke Premium untuk melihat statistik mood bulanan kalian.
-         </p>
-         <button 
-           onClick={() => setIsPricingOpen(true)}
-           className="btn btn-secondary-solid tracking-widest transition-transform active:scale-95 text-[10px]"
-         >
-           Upgrade Sekarang
-         </button>
-       </div>
-    </div>
-  );
 
   return (
     <div className="p-6 space-y-6 min-h-screen">
@@ -76,11 +76,11 @@ export default function StatistikPasangan() {
           </div>
         </div>
         
-        <div className="h-72 w-full">
+        <div className="h-72 w-full min-w-0">
           {loading ? (
             <div className="h-full flex items-center justify-center text-primary font-bold animate-pulse">Loading Stats...</div>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={chartData}>
                 <XAxis dataKey="display" axisLine={false} tickLine={false} tick={{fill: '#FFAFCC', fontSize: 10, fontWeight: 'bold'}} />
                 <YAxis hide />
@@ -96,13 +96,13 @@ export default function StatistikPasangan() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* --- MOOD TRACKER (LOCKED IF NOT PREMIUM) --- */}
         <div className="card-secondary p-8 shadow-sm relative overflow-hidden min-h-100">
-          {!isPremium && <LockOverlay title="Monthly Mood" />}
+          {!isPremium && <LockOverlay title="Monthly Mood" onUpgrade={() => setIsPricingOpen(true)} />}
           
           <div className={`transition-all duration-700 ${!isPremium ? 'blur-md opacity-40 scale-95' : ''}`}>
             <h2 className="header-primary-5 mb-1">Monthly Mood</h2>
             <p className="text-xs text-gray-400 mb-6">Mood kalian bulan ini</p>
-            <div className="flex flex-col items-center">
-              <ResponsiveContainer width="100%" height={220}>
+            <div className="flex w-full flex-col items-center">
+              <ResponsiveContainer width="100%" height={220} minWidth={0}>
                 <PieChart>
                   <Pie data={moodData} innerRadius={70} outerRadius={90} paddingAngle={8} dataKey="value" stroke="none">
                     {moodData.map((entry, index) => <Cell key={index} fill={entry.color} />)}

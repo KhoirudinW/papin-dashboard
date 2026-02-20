@@ -22,7 +22,7 @@ export default function Home() {
         if (session.data) {
           router.push('/dashboard');
         }
-      } catch (e) {
+      } catch {
         console.error("Invalid session format");
       }
     }
@@ -32,10 +32,9 @@ export default function Home() {
     <section className="relative z-0 h-screen bg-cream p-4 md:p-7 overflow-hidden">
       <Image 
         src={login2} 
-        className="absolute top-0 right-0 -z-10 opacity-50 md:opacity-100" 
+        className="absolute top-0 right-0 -z-10 h-auto w-[240px] opacity-50 md:w-[400px] md:opacity-100" 
         alt="bg login 2" 
-        width={400} 
-        height={400}
+        sizes="(max-width: 768px) 240px, 400px"
         priority // Tambahkan priority untuk image yang muncul di atas
       />
       
@@ -43,10 +42,9 @@ export default function Home() {
       
       <Image 
         src={login1} 
-        className="absolute bottom-0 left-0 -z-10 opacity-50 md:opacity-100" 
+        className="absolute bottom-0 left-0 -z-10 h-auto w-[240px] opacity-50 md:w-[400px] md:opacity-100" 
         alt="bg login 1" 
-        width={400} 
-        height={400}
+        sizes="(max-width: 768px) 240px, 400px"
       />
     </section>
   );

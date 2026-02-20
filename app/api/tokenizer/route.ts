@@ -13,7 +13,7 @@ type TokenizerRequestBody = {
 type PlanRow = {
   id: string;
   name: string;
-  price: number;
+  price: number | string;
   description: string | null;
 };
 
@@ -155,15 +155,17 @@ export async function POST(request: Request) {
     }
 
     const selectedPlan = plan as PlanRow;
-    if (!selectedPlan.price || selectedPlan.price <= 0) {
+    const basePlanAmount = toPositiveNumber(selectedPlan.price);
+    if (!basePlanAmount) {
       return NextResponse.json({ message: "Plan gratis tidak memerlukan pembayaran." }, { status: 400 });
     }
 
+    const normalizedPlanAmount = Math.max(1, Math.round(basePlanAmount));
     const activeDiscount = await getActiveDiscountClaim(pairId);
     const discountAmount = activeDiscount
-      ? Math.round((selectedPlan.price * activeDiscount.percent) / 100)
+      ? Math.round((normalizedPlanAmount * activeDiscount.percent) / 100)
       : 0;
-    const finalAmount = Math.max(1, selectedPlan.price - discountAmount);
+    const finalAmount = Math.max(1, normalizedPlanAmount - discountAmount);
 
     const orderId = generateOrderId(pairId);
     const snap = getMidtransSnap();
@@ -210,7 +212,7 @@ export async function POST(request: Request) {
               claimId: activeDiscount.claimId,
               percent: activeDiscount.percent,
               amount: discountAmount,
-              originalAmount: selectedPlan.price,
+              originalAmount: normalizedPlanAmount,
               finalAmount,
             }
           : null,
@@ -229,7 +231,7 @@ export async function POST(request: Request) {
       plan: {
         id: selectedPlan.id,
         name: selectedPlan.name,
-        price: selectedPlan.price,
+        price: normalizedPlanAmount,
       },
       discount: activeDiscount
         ? {
@@ -262,6 +264,57 @@ export async function POST(request: Request) {
     if (errorMessage.includes("Missing Midtrans")) {
       return NextResponse.json(
         { message: "Midtrans server key belum diset di env server." },
+        { status: 500 },
+      );
+    }
+
+    if (errorMessage.includes("Midtrans key mode mismatch")) {
+      return NextResponse.json(
+        {
+          message:
+            "Mode Midtrans tidak konsisten. Pastikan client key dan server key sama-sama sandbox atau sama-sama production.",
+        },
+        { status: 500 },
+      );
+    }
+
+    if (errorMessage.includes("Midtrans is configured as production but sandbox key is provided")) {
+      return NextResponse.json(
+        {
+          message:
+            "Konfigurasi Midtrans tidak cocok: mode production aktif, tetapi key yang dipakai sandbox.",
+        },
+        { status: 500 },
+      );
+    }
+
+    if (errorMessage.includes("Midtrans is configured as sandbox but production key is provided")) {
+      return NextResponse.json(
+        {
+          message:
+            "Konfigurasi Midtrans tidak cocok: mode sandbox aktif, tetapi key yang dipakai production.",
+        },
+        { status: 500 },
+      );
+    }
+
+    if (errorMessage.includes("Missing Supabase server env")) {
+      return NextResponse.json(
+        {
+          message:
+            "Supabase service role key belum diset di env server. Set NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY.",
+        },
+        { status: 500 },
+      );
+    }
+
+    const normalizedErrorMessage = errorMessage.toLowerCase();
+    if (normalizedErrorMessage.includes("access denied") || normalizedErrorMessage.includes("unauthorized")) {
+      return NextResponse.json(
+        {
+          message:
+            "Autentikasi Midtrans gagal. Cek kembali server key dan mode sandbox/production yang dipakai.",
+        },
         { status: 500 },
       );
     }

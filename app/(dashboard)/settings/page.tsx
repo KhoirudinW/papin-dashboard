@@ -1,8 +1,8 @@
 "use client";
 import React from 'react';
 import { 
-  User, Shield, CreditCard, Bell, 
-  ChevronRight, ArrowLeftCircle, LogOut, LockKeyhole, HandHeart
+  User, Shield, CreditCard,
+  ChevronRight, LogOut, LockKeyhole, HandHeart
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,7 +25,7 @@ export default function SettingsPage() {
     },
     {
       title: "Security",
-      description: "Ganti password dan amankan akunmu",
+      description: "Kelola pair code dengan verifikasi 2 orang",
       icon: <Shield className="text-green-500" />,
       href: "/settings/security",
       color: "bg-green-50"
