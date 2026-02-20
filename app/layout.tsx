@@ -23,7 +23,6 @@ const isMidtransProduction =
 const midtransSnapSrc = isMidtransProduction
   ? "https://app.midtrans.com/snap/snap.js"
   : "https://app.sandbox.midtrans.com/snap/snap.js";
-const googleAnalyticsMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
   title: {
@@ -101,22 +100,6 @@ export default function RootLayout({
         className={`${poppins.variable} antialiased`}
       >
         {children}
-        {googleAnalyticsMeasurementId ? (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsMeasurementId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${googleAnalyticsMeasurementId}');
-              `}
-            </Script>
-          </>
-        ) : null}
         <Script 
           src={midtransSnapSrc}
           data-client-key={midtransClientKey || undefined}
