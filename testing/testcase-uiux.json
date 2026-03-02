@@ -1,0 +1,335 @@
+{
+  "name": "papin-dashboard-uiux-automation",
+  "version": "1.0.0",
+  "updated_at": "2026-03-02",
+  "scope": [
+    "/login",
+    "/register"
+  ],
+  "selector_priority": [
+    "role",
+    "label",
+    "placeholder",
+    "css_fallback"
+  ],
+  "notes": [
+    "Prefer deterministic runs with mocked auth responses for error/success branches.",
+    "Capture dialog events because LoginCard uses window.alert for feedback.",
+    "Avoid class-based selectors from Tailwind utility classes."
+  ],
+  "cases": [
+    {
+      "id": "UIUX-001",
+      "title": "Login page desktop render",
+      "route": "/login",
+      "type": "layout",
+      "priority": "high",
+      "preconditions": [
+        "viewport=1440x900",
+        "no active session"
+      ],
+      "steps": [
+        "open /login"
+      ],
+      "assertions": [
+        "heading Login is visible",
+        "identifier field is visible",
+        "submit button Masuk Ke Dashboard is visible",
+        "tabs LOGIN and REGISTER are visible"
+      ]
+    },
+    {
+      "id": "UIUX-002",
+      "title": "Login page mobile no horizontal overflow",
+      "route": "/login",
+      "type": "responsive",
+      "priority": "high",
+      "preconditions": [
+        "viewport=375x812",
+        "no active session"
+      ],
+      "steps": [
+        "open /login",
+        "evaluate document.body.scrollWidth and window.innerWidth"
+      ],
+      "assertions": [
+        "document.body.scrollWidth <= window.innerWidth"
+      ]
+    },
+    {
+      "id": "UIUX-003",
+      "title": "Switch login method pair code to password",
+      "route": "/login",
+      "type": "interaction",
+      "priority": "high",
+      "preconditions": [
+        "login page opened"
+      ],
+      "steps": [
+        "click With passwords"
+      ],
+      "assertions": [
+        "secondary field label changes to Password",
+        "password placeholder is shown"
+      ]
+    },
+    {
+      "id": "UIUX-004",
+      "title": "Switch login method password to pair code",
+      "route": "/login",
+      "type": "interaction",
+      "priority": "high",
+      "preconditions": [
+        "method currently password"
+      ],
+      "steps": [
+        "click With pair code"
+      ],
+      "assertions": [
+        "secondary field label changes to Pair Code"
+      ]
+    },
+    {
+      "id": "UIUX-005",
+      "title": "Pair code input normalized uppercase",
+      "route": "/login",
+      "type": "input",
+      "priority": "high",
+      "preconditions": [
+        "method currently pair code"
+      ],
+      "steps": [
+        "fill pair code input with ab12cd"
+      ],
+      "assertions": [
+        "pair code input value equals AB12CD"
+      ]
+    },
+    {
+      "id": "UIUX-006",
+      "title": "Password eye toggle changes input type",
+      "route": "/login",
+      "type": "interaction",
+      "priority": "medium",
+      "preconditions": [
+        "method currently password"
+      ],
+      "steps": [
+        "click eye toggle once",
+        "click eye toggle second time"
+      ],
+      "assertions": [
+        "input type changes password to text after first click",
+        "input type changes text to password after second click"
+      ]
+    },
+    {
+      "id": "UIUX-007",
+      "title": "Login failure shows alert dialog",
+      "route": "/login",
+      "type": "feedback",
+      "priority": "high",
+      "preconditions": [
+        "mock login response success=false",
+        "error message invalid credential"
+      ],
+      "steps": [
+        "fill identifier and credential",
+        "click Masuk Ke Dashboard"
+      ],
+      "assertions": [
+        "dialog alert appears with invalid credential message"
+      ]
+    },
+    {
+      "id": "UIUX-008",
+      "title": "Login button loading state",
+      "route": "/login",
+      "type": "feedback",
+      "priority": "high",
+      "preconditions": [
+        "mock login resolves after 1-2 seconds"
+      ],
+      "steps": [
+        "click Masuk Ke Dashboard",
+        "observe button text during request"
+      ],
+      "assertions": [
+        "button text changes to Authenticating during request",
+        "button text returns after request completes"
+      ]
+    },
+    {
+      "id": "UIUX-009",
+      "title": "Navigate login to register tab",
+      "route": "/login",
+      "type": "navigation",
+      "priority": "high",
+      "preconditions": [
+        "login page opened"
+      ],
+      "steps": [
+        "click REGISTER tab"
+      ],
+      "assertions": [
+        "url path is /register",
+        "heading Register is visible"
+      ]
+    },
+    {
+      "id": "UIUX-010",
+      "title": "Register stage 1 default state",
+      "route": "/register",
+      "type": "state",
+      "priority": "high",
+      "preconditions": [
+        "auth stage none"
+      ],
+      "steps": [
+        "open /register"
+      ],
+      "assertions": [
+        "badge Belum Buat Akun is visible",
+        "button Buat Akun is visible",
+        "button Saya Sudah Verifikasi is visible"
+      ]
+    },
+    {
+      "id": "UIUX-011",
+      "title": "Create account success feedback",
+      "route": "/register",
+      "type": "feedback",
+      "priority": "high",
+      "preconditions": [
+        "mock createAuthAccount success with requiresEmailConfirmation=true"
+      ],
+      "steps": [
+        "fill email account and password account",
+        "click Buat Akun"
+      ],
+      "assertions": [
+        "dialog alert appears with verification instructions"
+      ]
+    },
+    {
+      "id": "UIUX-012",
+      "title": "Verify button guard when not verified",
+      "route": "/register",
+      "type": "guard",
+      "priority": "high",
+      "preconditions": [
+        "mock loginForSetup success=false"
+      ],
+      "steps": [
+        "click Saya Sudah Verifikasi"
+      ],
+      "assertions": [
+        "dialog alert with verification error is shown",
+        "stage 2 setup profile section remains hidden"
+      ]
+    },
+    {
+      "id": "UIUX-013",
+      "title": "Stage 2 profile setup visible when verified",
+      "route": "/register",
+      "type": "state",
+      "priority": "high",
+      "preconditions": [
+        "mock authStage verified"
+      ],
+      "steps": [
+        "open /register"
+      ],
+      "assertions": [
+        "section Tahap 2 - Setup Profile is visible"
+      ]
+    },
+    {
+      "id": "UIUX-014",
+      "title": "Switch register mode pair now and solo",
+      "route": "/register",
+      "type": "interaction",
+      "priority": "medium",
+      "preconditions": [
+        "stage 2 setup profile is visible"
+      ],
+      "steps": [
+        "select pair_now mode",
+        "select solo mode"
+      ],
+      "assertions": [
+        "cta text updates to Daftar Berdua in pair mode",
+        "cta text updates to Daftar Sekarang in solo mode"
+      ]
+    },
+    {
+      "id": "UIUX-015",
+      "title": "Partner gender locked opposite from user",
+      "route": "/register",
+      "type": "validation",
+      "priority": "high",
+      "preconditions": [
+        "stage 2 visible",
+        "mode pair_now selected"
+      ],
+      "steps": [
+        "in Data Dirimu set gender A",
+        "click Lanjut ke Data Pasangan"
+      ],
+      "assertions": [
+        "partner gender field is read only",
+        "partner gender value equals Perempuan"
+      ]
+    },
+    {
+      "id": "UIUX-016",
+      "title": "Agreement checkbox controls submit button",
+      "route": "/register",
+      "type": "guard",
+      "priority": "high",
+      "preconditions": [
+        "stage at final submit step"
+      ],
+      "steps": [
+        "observe submit button before checkbox checked",
+        "check agreement checkbox"
+      ],
+      "assertions": [
+        "submit button is disabled before checkbox",
+        "submit button is enabled after checkbox"
+      ]
+    },
+    {
+      "id": "UIUX-017",
+      "title": "Privacy summary tooltip appears on hover",
+      "route": "/register",
+      "type": "microinteraction",
+      "priority": "medium",
+      "preconditions": [
+        "final submit step visible"
+      ],
+      "steps": [
+        "hover agreement area"
+      ],
+      "assertions": [
+        "tooltip with title Privacy Summary is visible"
+      ]
+    },
+    {
+      "id": "UIUX-018",
+      "title": "Redirect to dashboard when session exists",
+      "route": "/login",
+      "type": "navigation",
+      "priority": "high",
+      "preconditions": [
+        "mock supabase auth session exists"
+      ],
+      "steps": [
+        "open /login"
+      ],
+      "assertions": [
+        "current path changes to /dashboard"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "generated_at": "2026-03-02T11:18:23.358Z",
+  "tool": "playwright-cli",
+  "source": "testing/testcase.md (UI/UX Automation Test Cases)",
+  "summary": {
+    "total": 18,
+    "pass": 13,
+    "fail": 0,
+    "blocked": 5
+  },
+  "results": [
+    {
+      "id": "UIUX-001",
+      "status": "PASS",
+      "detail": "Render desktop login page"
+    },
+    {
+      "id": "UIUX-002",
+      "status": "PASS",
+      "detail": "horizontal overflow delta=0"
+    },
+    {
+      "id": "UIUX-003",
+      "status": "PASS",
+      "detail": "Switch pair code -> password"
+    },
+    {
+      "id": "UIUX-004",
+      "status": "PASS",
+      "detail": "Switch password -> pair code"
+    },
+    {
+      "id": "UIUX-005",
+      "status": "PASS",
+      "detail": "value=AB12CD"
+    },
+    {
+      "id": "UIUX-006",
+      "status": "PASS",
+      "detail": "password->text->password"
+    },
+    {
+      "id": "UIUX-007",
+      "status": "PASS",
+      "detail": "Pair code wajib diisi."
+    },
+    {
+      "id": "UIUX-008",
+      "status": "PASS",
+      "detail": "sawLoading=true, backNormal=true, alert=Invalid login credentials"
+    },
+    {
+      "id": "UIUX-009",
+      "status": "PASS",
+      "detail": "http://127.0.0.1:3000/register"
+    },
+    {
+      "id": "UIUX-010",
+      "status": "PASS",
+      "detail": "Register stage 1 default"
+    },
+    {
+      "id": "UIUX-011",
+      "status": "PASS",
+      "detail": "Akun berhasil dibuat. Cek email untuk verifikasi, lalu klik tombol 'Saya Sudah Verifikasi'."
+    },
+    {
+      "id": "UIUX-012",
+      "status": "PASS",
+      "detail": "alert=Format email tidak valid., stage2=false"
+    },
+    {
+      "id": "UIUX-013",
+      "status": "BLOCKED",
+      "detail": "Login valid tetapi tahap 2 tidak muncul (akun belum verified atau sesi tidak cocok)."
+    },
+    {
+      "id": "UIUX-014",
+      "status": "BLOCKED",
+      "detail": "Bergantung pada UIUX-013."
+    },
+    {
+      "id": "UIUX-015",
+      "status": "BLOCKED",
+      "detail": "Bergantung pada UIUX-013."
+    },
+    {
+      "id": "UIUX-016",
+      "status": "BLOCKED",
+      "detail": "Bergantung pada UIUX-013."
+    },
+    {
+      "id": "UIUX-017",
+      "status": "BLOCKED",
+      "detail": "Bergantung pada UIUX-013."
+    },
+    {
+      "id": "UIUX-018",
+      "status": "PASS",
+      "detail": "http://127.0.0.1:3000/dashboard"
+    }
+  ]
+}

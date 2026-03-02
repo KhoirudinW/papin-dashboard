@@ -1,0 +1,101 @@
+{
+  "generated_at": "2026-03-02T10:30:12.045Z",
+  "plan": "testing/tester/test-plan.json",
+  "source_testcase": "testing/testcase.md",
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0
+  },
+  "executed": [
+    {
+      "id": "AUTO-001",
+      "type": "command",
+      "description": "Lint register hook",
+      "status": "PASS",
+      "detail": "> papin-dashboard@0.1.0 lint\n> eslint hooks/useRegister.ts"
+    },
+    {
+      "id": "AUTO-002",
+      "type": "command",
+      "description": "Lint login/register card",
+      "status": "PASS",
+      "detail": "> papin-dashboard@0.1.0 lint\n> eslint components/LoginCard.tsx"
+    },
+    {
+      "id": "AUTO-003",
+      "type": "command",
+      "description": "Lint login page",
+      "status": "PASS",
+      "detail": "> papin-dashboard@0.1.0 lint\n> eslint app/(auth)/login/page.tsx"
+    },
+    {
+      "id": "AUTO-004",
+      "type": "command",
+      "description": "Lint profile route setup page",
+      "status": "PASS",
+      "detail": "> papin-dashboard@0.1.0 lint\n> eslint app/(auth)/register/profile/page.tsx"
+    },
+    {
+      "id": "AUTO-005",
+      "type": "command",
+      "description": "Lint auth hook",
+      "status": "PASS",
+      "detail": "> papin-dashboard@0.1.0 lint\n> eslint hooks/useAuth.ts"
+    },
+    {
+      "id": "AUTO-006",
+      "type": "command",
+      "description": "Lint supabase client config",
+      "status": "PASS",
+      "detail": "> papin-dashboard@0.1.0 lint\n> eslint lib/supabase.ts"
+    },
+    {
+      "id": "AUTO-007",
+      "type": "command",
+      "description": "Lint pairing notification handler",
+      "status": "PASS",
+      "detail": "> papin-dashboard@0.1.0 lint\n> eslint app/api/pairing/notifications/route.ts"
+    },
+    {
+      "id": "AUTO-008",
+      "type": "command",
+      "description": "Lint navbar notifications UI",
+      "status": "PASS",
+      "detail": "> papin-dashboard@0.1.0 lint\n> eslint components/Navbar.tsx\n\n\nD:\\lain_lain\\Coding\\project\\PAPin-web\\papin-dashboard\\components\\Navbar.tsx\n  688:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\n\n 1 problem (0 errors, 1 warning)"
+    },
+    {
+      "id": "FILE-001",
+      "type": "file_check",
+      "description": "Route redirect target exists",
+      "status": "PASS",
+      "detail": "Found: app/(auth)/register/profile/page.tsx"
+    },
+    {
+      "id": "FILE-002",
+      "type": "file_check",
+      "description": "Register testcase document exists",
+      "status": "PASS",
+      "detail": "Found: testing/testcase.md"
+    },
+    {
+      "id": "FILE-003",
+      "type": "file_check",
+      "description": "Pairing migration exists",
+      "status": "PASS",
+      "detail": "Found: supabase/migrations/20260228_add_pairing_requests_and_relax_auth_links.sql"
+    },
+    {
+      "id": "FILE-004",
+      "type": "file_check",
+      "description": "UI UX automation testcase JSON exists",
+      "status": "PASS",
+      "detail": "Found: testing/testcase-uiux.json"
+    }
+  ],
+  "manual_reference": {
+    "document": "testing/testcase.md",
+    "total_cases": 50,
+    "note": "UI/API end-to-end manual cases plus UI/UX automation matrix should be executed by QA in browser and Supabase environment."
+  }
+}

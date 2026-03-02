@@ -1,0 +1,103 @@
+{
+  "generated_at": "2026-03-02T11:10:03.396Z",
+  "tool": "playwright-cli",
+  "source": "testing/testcase.md (UI/UX Automation Test Cases)",
+  "summary": {
+    "total": 18,
+    "pass": 11,
+    "fail": 6,
+    "blocked": 1
+  },
+  "results": [
+    {
+      "id": "UIUX-001",
+      "status": "PASS",
+      "detail": "Render desktop login page"
+    },
+    {
+      "id": "UIUX-002",
+      "status": "PASS",
+      "detail": "horizontal overflow delta=0"
+    },
+    {
+      "id": "UIUX-003",
+      "status": "PASS",
+      "detail": "Switch pair code -> password"
+    },
+    {
+      "id": "UIUX-004",
+      "status": "PASS",
+      "detail": "Switch password -> pair code"
+    },
+    {
+      "id": "UIUX-005",
+      "status": "PASS",
+      "detail": "value=AB12CD"
+    },
+    {
+      "id": "UIUX-006",
+      "status": "PASS",
+      "detail": "password->text->password"
+    },
+    {
+      "id": "UIUX-007",
+      "status": "PASS",
+      "detail": "Pair code wajib diisi."
+    },
+    {
+      "id": "UIUX-008",
+      "status": "PASS",
+      "detail": "sawLoading=true, backNormal=true, alert=Invalid login credentials"
+    },
+    {
+      "id": "UIUX-009",
+      "status": "PASS",
+      "detail": "http://127.0.0.1:3000/register"
+    },
+    {
+      "id": "UIUX-010",
+      "status": "PASS",
+      "detail": "Register stage 1 default"
+    },
+    {
+      "id": "UIUX-011",
+      "status": "BLOCKED",
+      "detail": "Butuh mock success createAuthAccount agar deterministic tanpa membuat akun real."
+    },
+    {
+      "id": "UIUX-012",
+      "status": "PASS",
+      "detail": "alert=Format email tidak valid., stage2=false"
+    },
+    {
+      "id": "UIUX-013",
+      "status": "FAIL",
+      "detail": "stage2 visible=false"
+    },
+    {
+      "id": "UIUX-014",
+      "status": "FAIL",
+      "detail": "### Error\nError: locator.click: SyntaxError: Failed to execute 'matches' on 'Element': 'div.grid.grid-cols-1.md:grid-cols-2.gap-3' is not a valid selector.\n    at SelectorEvaluatorImpl._matchesCSS (<anonymous>:5137:20)\n    at <anonymous>:5009:31\n    at SelectorEvaluatorImpl._cached (<anonymous>:4930:20)\n    at SelectorEvaluatorImpl._matchesSimple (<anonymous>:5006:17)\n    at <anonymous>:5060:30\n    at SelectorEvaluatorImpl._cached (<anonymous>:4930:20)\n    at SelectorEvaluatorImpl._matchesParents (<anonymous>:5056:17)\n    at <anonymous>:4969:54\n    at Array.filter (<anonymous>)\n    at <anonymous>:4969:29\nCall log:\n\u001b[2m  - waiting for locator('div.grid.grid-cols-1.md:grid-cols-2.gap-3 > button').first()\u001b[22m"
+    },
+    {
+      "id": "UIUX-015",
+      "status": "FAIL",
+      "detail": "### Error\nError: locator.click: SyntaxError: Failed to execute 'matches' on 'Element': 'div.grid.grid-cols-1.md:grid-cols-2.gap-3' is not a valid selector.\n    at SelectorEvaluatorImpl._matchesCSS (<anonymous>:5137:20)\n    at <anonymous>:5009:31\n    at SelectorEvaluatorImpl._cached (<anonymous>:4930:20)\n    at SelectorEvaluatorImpl._matchesSimple (<anonymous>:5006:17)\n    at <anonymous>:5060:30\n    at SelectorEvaluatorImpl._cached (<anonymous>:4930:20)\n    at SelectorEvaluatorImpl._matchesParents (<anonymous>:5056:17)\n    at <anonymous>:4969:54\n    at Array.filter (<anonymous>)\n    at <anonymous>:4969:29\nCall log:\n\u001b[2m  - waiting for locator('div.grid.grid-cols-1.md:grid-cols-2.gap-3 > button').first()\u001b[22m"
+    },
+    {
+      "id": "UIUX-016",
+      "status": "FAIL",
+      "detail": "### Error\nError: locator.click: SyntaxError: Failed to execute 'matches' on 'Element': 'div.grid.grid-cols-1.md:grid-cols-2.gap-3' is not a valid selector.\n    at SelectorEvaluatorImpl._matchesCSS (<anonymous>:5137:20)\n    at <anonymous>:5009:31\n    at SelectorEvaluatorImpl._cached (<anonymous>:4930:20)\n    at SelectorEvaluatorImpl._matchesSimple (<anonymous>:5006:17)\n    at <anonymous>:5060:30\n    at SelectorEvaluatorImpl._cached (<anonymous>:4930:20)\n    at SelectorEvaluatorImpl._matchesParents (<anonymous>:5056:17)\n    at <anonymous>:4969:54\n    at Array.filter (<anonymous>)\n    at <anonymous>:4969:29\nCall log:\n\u001b[2m  - waiting for locator('div.grid.grid-cols-1.md:grid-cols-2.gap-3 > button').first()\u001b[22m"
+    },
+    {
+      "id": "UIUX-017",
+      "status": "FAIL",
+      "detail": "### Error\nError: locator.click: SyntaxError: Failed to execute 'matches' on 'Element': 'div.grid.grid-cols-1.md:grid-cols-2.gap-3' is not a valid selector.\n    at SelectorEvaluatorImpl._matchesCSS (<anonymous>:5137:20)\n    at <anonymous>:5009:31\n    at SelectorEvaluatorImpl._cached (<anonymous>:4930:20)\n    at SelectorEvaluatorImpl._matchesSimple (<anonymous>:5006:17)\n    at <anonymous>:5060:30\n    at SelectorEvaluatorImpl._cached (<anonymous>:4930:20)\n    at SelectorEvaluatorImpl._matchesParents (<anonymous>:5056:17)\n    at <anonymous>:4969:54\n    at Array.filter (<anonymous>)\n    at <anonymous>:4969:29\nCall log:\n\u001b[2m  - waiting for locator('div.grid.grid-cols-1.md:grid-cols-2.gap-3 > button').first()\u001b[22m"
+    },
+    {
+      "id": "UIUX-018",
+      "status": "FAIL",
+      "detail": "### Error\nTimeoutError: page.waitForURL: Timeout 7000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/dashboard\" until \"load\"\n  navigated to \"http://127.0.0.1:3000/login\"\n============================================================"
+    }
+  ]
+}

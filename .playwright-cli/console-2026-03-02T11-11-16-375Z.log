@@ -1,0 +1,31 @@
+[    4180ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[    9487ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[   14010ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[   14276ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[   38075ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://razkgtnusteaapauhspn.supabase.co/auth/v1/token?grant_type=password:0
+[   53130ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[   53407ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[   56396ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[   65159ms] [ERROR] TypeError: Failed to fetch
+    at http://127.0.0.1:3000/_next/static/chunks/node_modules_def5c1ee._.js:16980:23
+    at _handleRequest (http://127.0.0.1:3000/_next/static/chunks/node_modules_def5c1ee._.js:17334:24)
+    at _request (http://127.0.0.1:3000/_next/static/chunks/node_modules_def5c1ee._.js:17321:24)
+    at http://127.0.0.1:3000/_next/static/chunks/node_modules_def5c1ee._.js:20563:220
+    at SupabaseAuthClient._useSession (http://127.0.0.1:3000/_next/static/chunks/node_modules_def5c1ee._.js:20432:26)
+    at async SupabaseAuthClient._getUser (http://127.0.0.1:3000/_next/static/chunks/node_modules_def5c1ee._.js:20548:20)
+    at async http://127.0.0.1:3000/_next/static/chunks/node_modules_def5c1ee._.js:20532:20 @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:3127
+[   67805ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[   67806ms] [WARNING] The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297

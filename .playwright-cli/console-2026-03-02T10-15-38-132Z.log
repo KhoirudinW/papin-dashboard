@@ -1,0 +1,20 @@
+[    2639ms] [ERROR] Faro
+ @grafana/faro-web-sdk:transport-fetch
+ Failed sending payload to the receiver
+ {meta: Object, events: Array(1)} TypeError: Failed to fetch
+    at e.<computed> (https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/newrelic-assets/nr-spa.production.min.js:5:42192)
+    at https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/v4/assets/snap-popup-app.production.8604554e509a8cdb32d9.js:354:385030
+    at o (https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/v4/assets/snap-popup-app.production.8604554e509a8cdb32d9.js:354:383898)
+    at https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/v4/assets/snap-popup-app.production.8604554e509a8cdb32d9.js:354:384086
+    at nrWrapper (https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/newrelic-assets/nr-spa.production.min.js:5:18180)
+    at new Promise (<anonymous>)
+    at new Promise (https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/newrelic-assets/nr-spa.production.min.js:5:55841)
+    at Object.add (https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/v4/assets/snap-popup-app.production.8604554e509a8cdb32d9.js:354:384025)
+    at dy.<anonymous> (https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/v4/assets/snap-popup-app.production.8604554e509a8cdb32d9.js:354:384450)
+    at Generator.next (<anonymous>) @ https://snap-assets.al-pc-id-p.cdn.gtflabs.io/snap/v4/assets/snap-popup-app.production.8604554e509a8cdb32d9.js:353
+[    3201ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[    8306ms] [WARNING] Image with src "/_next/static/media/login1.dfb02b11.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js:2297
+[   12546ms] [WARNING] The resource http://127.0.0.1:3000/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flogin2.39722268.png&w=256&q=75 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://127.0.0.1:3000/login:0
+[   26680ms] [WARNING] The resource http://127.0.0.1:3000/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flogin2.39722268.png&w=256&q=75 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://127.0.0.1:3000/login:0

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -9,9 +9,12 @@ import {
   CheckCircle2,
   KeyRound,
   Clock3,
+  UserPlus,
+  Link2,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import {
   getPendingPairCodeChange,
   removePendingPairCodeChange,
@@ -21,6 +24,7 @@ import type {
   PairCodeChangeNotificationItem,
   PairCodeChangeNotificationsResponse,
 } from "@/types/pairCodeChange";
+import type { PairingNotificationItem, PairingNotificationsResponse } from "@/types/pairing";
 
 type FeedbackState = {
   type: "idle" | "success" | "error";
@@ -76,6 +80,13 @@ export default function SecurityPage() {
   const [feedback, setFeedback] = useState<FeedbackState>({ type: "idle", message: "" });
   const [incomingRequests, setIncomingRequests] = useState<PairCodeChangeNotificationItem[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<PairCodeChangeNotificationItem[]>([]);
+  const [pairingIdentifier, setPairingIdentifier] = useState("");
+  const [pairingSubmitting, setPairingSubmitting] = useState(false);
+  const [pairingFeedback, setPairingFeedback] = useState<FeedbackState>({ type: "idle", message: "" });
+  const [incomingPairingRequests, setIncomingPairingRequests] = useState<PairingNotificationItem[]>([]);
+  const [outgoingPairingRequests, setOutgoingPairingRequests] = useState<PairingNotificationItem[]>([]);
+  const [pairingLoading, setPairingLoading] = useState(false);
+  const [pairingError, setPairingError] = useState("");
 
   useEffect(() => {
     updateUserRef.current = updateUser;
@@ -84,6 +95,12 @@ export default function SecurityPage() {
   useEffect(() => {
     setPairCodeSnapshot(user?.me?.pair_code || "");
   }, [user?.me?.pair_code]);
+
+  const getAuthHeader = useCallback(async (): Promise<Record<string, string>> => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, []);
 
   const syncLocalPendingCodes = useCallback(
     (outgoingItems: PairCodeChangeNotificationItem[]) => {
@@ -166,6 +183,124 @@ export default function SecurityPage() {
 
     return () => window.clearInterval(intervalId);
   }, [loadRequests]);
+
+  const loadPairingRequests = useCallback(async () => {
+    const profileId = user?.me?.id;
+    if (!profileId) {
+      setIncomingPairingRequests([]);
+      setOutgoingPairingRequests([]);
+      return;
+    }
+
+    setPairingLoading(true);
+    setPairingError("");
+
+    try {
+      const authHeader = await getAuthHeader();
+      const response = await fetch("/api/pairing/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader,
+        },
+        body: JSON.stringify({ profileId }),
+      });
+
+      const payload = (await response.json()) as PairingNotificationsResponse | { message?: string };
+      if (!response.ok) {
+        throw new Error(
+          "message" in payload && payload.message
+            ? payload.message
+            : "Gagal memuat notifikasi pairing.",
+        );
+      }
+
+      const normalizedPayload = payload as PairingNotificationsResponse;
+      setIncomingPairingRequests(normalizedPayload.incoming || []);
+      setOutgoingPairingRequests(normalizedPayload.outgoing || []);
+    } catch (error: unknown) {
+      setPairingError(error instanceof Error ? error.message : "Gagal memuat notifikasi pairing.");
+    } finally {
+      setPairingLoading(false);
+    }
+  }, [getAuthHeader, user?.me?.id]);
+
+  useEffect(() => {
+    void loadPairingRequests();
+
+    const intervalId = window.setInterval(() => {
+      void loadPairingRequests();
+    }, 30000);
+
+    return () => window.clearInterval(intervalId);
+  }, [loadPairingRequests]);
+
+  const handlePairingRequest = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (user?.me?.pair_id) {
+      setPairingFeedback({
+        type: "error",
+        message: "Kamu sudah punya pasangan aktif.",
+      });
+      return;
+    }
+
+    const profileId = user?.me?.id;
+    if (!profileId) {
+      setPairingFeedback({
+        type: "error",
+        message: "Profile tidak ditemukan. Silakan login ulang.",
+      });
+      return;
+    }
+
+    const normalizedIdentifier = pairingIdentifier.trim();
+    if (!normalizedIdentifier) {
+      setPairingFeedback({
+        type: "error",
+        message: "Masukkan username atau email pasangan.",
+      });
+      return;
+    }
+
+    setPairingSubmitting(true);
+    setPairingFeedback({ type: "idle", message: "" });
+
+    try {
+      const authHeader = await getAuthHeader();
+      const response = await fetch("/api/pairing/request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader,
+        },
+        body: JSON.stringify({
+          requesterProfileId: profileId,
+          targetIdentifier: normalizedIdentifier,
+        }),
+      });
+
+      const payload = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(payload.message || "Gagal mengirim pairing request.");
+      }
+
+      setPairingFeedback({
+        type: "success",
+        message: payload.message || "Pairing request berhasil dikirim.",
+      });
+      setPairingIdentifier("");
+      await loadPairingRequests();
+    } catch (error: unknown) {
+      setPairingFeedback({
+        type: "error",
+        message: error instanceof Error ? error.message : "Gagal mengirim pairing request.",
+      });
+    } finally {
+      setPairingSubmitting(false);
+    }
+  };
 
   const handleRequestPairCodeChange = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -261,7 +396,98 @@ export default function SecurityPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-gray-50 shadow-sm space-y-6">
+          {!user?.me?.pair_id && (
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-50 shadow-sm space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-pink-50 rounded-2xl text-primary">
+                  <UserPlus size={20} />
+                </div>
+                <div>
+                  <h3 className="font-black text-gray-800 italic">Pairing Dengan Pasangan</h3>
+                  <p className="text-[11px] text-gray-400 font-bold">
+                    Daftar sendiri dulu, lalu kirim request pairing ke pasangan.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handlePairingRequest} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">
+                    Username / Email Pasangan
+                  </label>
+                  <input
+                    type="text"
+                    value={pairingIdentifier}
+                    onChange={(event) => setPairingIdentifier(event.target.value)}
+                    className="w-full p-4 rounded-2xl border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-primary outline-none transition-all text-sm font-black"
+                    placeholder="contoh: ayang123 atau ayang@email.com"
+                    maxLength={120}
+                  />
+                </div>
+
+                <button
+                  disabled={pairingSubmitting}
+                  className="w-full py-4 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-pink-100 hover:brightness-110 active:scale-95 transition-all disabled:bg-gray-200 flex items-center justify-center gap-2"
+                >
+                  {pairingSubmitting ? <Loader2 className="animate-spin" size={18} /> : <Link2 size={18} />}
+                  {pairingSubmitting ? "Mengirim Request..." : "Kirim Pairing Request"}
+                </button>
+              </form>
+
+              {pairingFeedback.type !== "idle" && (
+                <div
+                  className={`p-4 rounded-2xl border text-[11px] font-bold leading-relaxed ${
+                    pairingFeedback.type === "success"
+                      ? "bg-green-50 border-green-100 text-green-700"
+                      : "bg-red-50 border-red-100 text-red-600"
+                  }`}
+                >
+                  {pairingFeedback.message}
+                </div>
+              )}
+
+              {pairingError && (
+                <div className="p-4 rounded-2xl border border-red-100 bg-red-50 text-red-600 text-[11px] font-bold">
+                  {pairingError}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Request Pairing Saya</p>
+                  {pairingLoading && <Loader2 size={14} className="animate-spin text-primary" />}
+                </div>
+
+                {outgoingPairingRequests.length === 0 ? (
+                  <div className="p-4 rounded-2xl border border-dashed border-gray-200 text-[11px] font-bold text-gray-400">
+                    Belum ada pairing request yang dikirim.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {outgoingPairingRequests.slice(0, 5).map((item) => (
+                      <div key={item.id} className="p-3 rounded-2xl border border-gray-100 bg-gray-50/60">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-[11px] font-black text-gray-700 uppercase tracking-wide truncate">
+                            Ke: {item.requestedToProfile?.fullName || item.requestedToProfile?.name || "User"}
+                          </p>
+                          <span className={`text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-widest ${getStatusBadge(item.status).className}`}>
+                            {getStatusBadge(item.status).label}
+                          </span>
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                          Dibuat: {formatDateTimeLabel(item.createdAt)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {user?.me?.pair_id && (
+            <>
+              <div className="bg-white p-8 rounded-[2.5rem] border border-gray-50 shadow-sm space-y-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-pink-50 rounded-2xl text-primary">
                 <KeyRound size={20} />
@@ -330,7 +556,7 @@ export default function SecurityPage() {
             )}
           </div>
 
-          <div className="bg-white p-8 rounded-[2.5rem] border border-gray-50 shadow-sm space-y-5">
+              <div className="bg-white p-8 rounded-[2.5rem] border border-gray-50 shadow-sm space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="font-black text-gray-800 italic flex items-center gap-2">
                 <Clock3 size={18} className="text-primary" />
@@ -380,6 +606,8 @@ export default function SecurityPage() {
               </div>
             )}
           </div>
+            </>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -421,8 +649,7 @@ export default function SecurityPage() {
             <div className="space-y-1">
               <h5 className="text-[10px] font-black uppercase text-yellow-700 tracking-wider">Notifikasi Masuk</h5>
               <p className="text-[10px] font-bold text-yellow-700/90 leading-relaxed italic">
-                Saat ini ada {incomingRequests.length} request persetujuan pair code yang menunggu respons kamu di
-                Navbar.
+                Saat ini ada {incomingRequests.length + incomingPairingRequests.filter((item) => item.status === "pending").length} request (pair code + pairing) yang menunggu respons kamu di Navbar.
               </p>
             </div>
           </div>
@@ -431,3 +658,4 @@ export default function SecurityPage() {
     </div>
   );
 }
+

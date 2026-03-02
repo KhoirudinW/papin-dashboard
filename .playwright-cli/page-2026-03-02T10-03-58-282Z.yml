@@ -1,0 +1,28 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - img "bg login 2" [ref=e4]
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Login" [level=2] [ref=e7]
+        - generic [ref=e8]:
+          - link "LOGIN" [ref=e9] [cursor=pointer]:
+            - /url: /
+          - link "REGISTER" [ref=e10] [cursor=pointer]:
+            - /url: /register
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]:
+            - generic [ref=e14]: Email / Username
+            - textbox "contoh@email.com atau username" [ref=e15]
+          - generic [ref=e16]:
+            - generic [ref=e17]: Pair Code
+            - generic [ref=e18]:
+              - textbox "Masukkan pair code" [ref=e19]
+              - button [ref=e20]:
+                - img [ref=e21]
+            - button "With passwords" [ref=e26]
+        - button "Masuk Ke Dashboard" [ref=e27]
+    - img "bg login 1" [ref=e28]
+  - button "Open Next.js Dev Tools" [ref=e34] [cursor=pointer]:
+    - img [ref=e35]
+  - alert [ref=e38]

@@ -7,25 +7,21 @@ import login2 from "pub/assets/login2.png";
 import { LoginCard } from "@/components/LoginCard";
 import { useEffect } from "react";
 import { useRouter } from 'next/navigation'; // Gunakan useRouter untuk Client Component
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Cek session hanya setelah komponen masuk ke browser (mount)
-    const sessionStr = localStorage.getItem('papin_session');
-    
-    if (sessionStr) {
-      try {
-        const session = JSON.parse(sessionStr);
-        // Jika session ada dan valid, arahkan ke dashboard
-        if (session.data) {
-          router.push('/dashboard');
-        }
-      } catch {
-        console.error("Invalid session format");
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      const localSession = localStorage.getItem("papin_session");
+      if (data.session?.user || localSession) {
+        router.push('/dashboard');
       }
-    }
+    };
+
+    checkSession();
   }, [router]);
 
   return (

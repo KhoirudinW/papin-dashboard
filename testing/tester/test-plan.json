@@ -1,0 +1,75 @@
+{
+  "name": "papin-dashboard-manual-plus-automated",
+  "source_testcase": "testing/testcase.md",
+  "automated": {
+    "commands": [
+      {
+        "id": "AUTO-001",
+        "description": "Lint register hook",
+        "command": "npm run lint -- \"hooks/useRegister.ts\""
+      },
+      {
+        "id": "AUTO-002",
+        "description": "Lint login/register card",
+        "command": "npm run lint -- \"components/LoginCard.tsx\""
+      },
+      {
+        "id": "AUTO-003",
+        "description": "Lint login page",
+        "command": "npm run lint -- \"app/(auth)/login/page.tsx\""
+      },
+      {
+        "id": "AUTO-004",
+        "description": "Lint profile route setup page",
+        "command": "npm run lint -- \"app/(auth)/register/profile/page.tsx\""
+      },
+      {
+        "id": "AUTO-005",
+        "description": "Lint auth hook",
+        "command": "npm run lint -- \"hooks/useAuth.ts\""
+      },
+      {
+        "id": "AUTO-006",
+        "description": "Lint supabase client config",
+        "command": "npm run lint -- \"lib/supabase.ts\""
+      },
+      {
+        "id": "AUTO-007",
+        "description": "Lint pairing notification handler",
+        "command": "npm run lint -- \"app/api/pairing/notifications/route.ts\""
+      },
+      {
+        "id": "AUTO-008",
+        "description": "Lint navbar notifications UI",
+        "command": "npm run lint -- \"components/Navbar.tsx\""
+      }
+    ],
+    "file_checks": [
+      {
+        "id": "FILE-001",
+        "description": "Route redirect target exists",
+        "path": "app/(auth)/register/profile/page.tsx"
+      },
+      {
+        "id": "FILE-002",
+        "description": "Register testcase document exists",
+        "path": "testing/testcase.md"
+      },
+      {
+        "id": "FILE-003",
+        "description": "Pairing migration exists",
+        "path": "supabase/migrations/20260228_add_pairing_requests_and_relax_auth_links.sql"
+      },
+      {
+        "id": "FILE-004",
+        "description": "UI UX automation testcase JSON exists",
+        "path": "testing/testcase-uiux.json"
+      }
+    ]
+  },
+  "manual_reference": {
+    "document": "testing/testcase.md",
+    "total_cases": 50,
+    "note": "UI/API end-to-end manual cases plus UI/UX automation matrix should be executed by QA in browser and Supabase environment."
+  }
+}
