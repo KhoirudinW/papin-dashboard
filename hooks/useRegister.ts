@@ -52,6 +52,48 @@ const PROFILE_KEY = "papin_active_profile_id";
 const validateEmailFormat = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const isPlaceholderEmail = (value: string) => value.endsWith("@example.com");
 
+const normalizeUrl = (value: string) => value.replace(/\/+$/, "");
+
+const getSignupRedirectCandidates = () => {
+  const candidates: string[] = [];
+
+  if (typeof window !== "undefined" && window.location?.origin) {
+    candidates.push(`${normalizeUrl(window.location.origin)}/register/profile`);
+  }
+
+  const envRedirect = String(process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || "").trim();
+  if (envRedirect) {
+    candidates.push(envRedirect);
+  }
+
+  const envSiteUrl = String(process.env.NEXT_PUBLIC_SITE_URL || "").trim();
+  if (envSiteUrl) {
+    candidates.push(`${normalizeUrl(envSiteUrl)}/register/profile`);
+  }
+
+  return Array.from(new Set(candidates.filter(Boolean)));
+};
+
+const shouldRetrySignupWithoutRedirect = (err: unknown) => {
+  const message = err instanceof Error ? err.message : String(err || "");
+  const lowerMessage = message.toLowerCase();
+  const status =
+    typeof err === "object" && err !== null && "status" in err
+      ? Number((err as { status?: number }).status || 0)
+      : 0;
+
+  if (status >= 500) {
+    return true;
+  }
+
+  return (
+    lowerMessage.includes("redirect") ||
+    lowerMessage.includes("internal server error") ||
+    lowerMessage.includes("smtp") ||
+    lowerMessage.includes("confirmation email")
+  );
+};
+
 const mapAuthError = (err: unknown, fallback: string) => {
   const message = err instanceof Error ? err.message : String(err || "");
   const lowerMessage = message.toLowerCase();
@@ -86,6 +128,10 @@ const mapAuthError = (err: unknown, fallback: string) => {
 
   if (status === 409 || code === "23505") {
     return "Data profile bentrok (409). Pastikan migration terbaru sudah dijalankan.";
+  }
+
+  if (status >= 500 || lowerMessage.includes("internal server error")) {
+    return "Signup Supabase gagal (500). Cek Auth URL Configuration (Site URL/Redirect URL) dan konfigurasi email provider di Supabase.";
   }
 
   return message || fallback;
@@ -159,19 +205,48 @@ export const useRegister = () => {
         return { success: false, error: "Password minimal 6 karakter." };
       }
 
-      const { data, error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password: normalizedPassword,
-        options: {
-          emailRedirectTo:
-            typeof window !== "undefined"
-              ? `${window.location.origin}/register/profile`
-              : undefined,
-        },
-      });
+      const redirectCandidates = getSignupRedirectCandidates();
+      let data: Awaited<ReturnType<typeof supabase.auth.signUp>>["data"] | null = null;
+      let lastError: unknown = null;
+      let signupError: unknown = null;
 
-      if (error) {
-        throw error;
+      for (const redirectTo of redirectCandidates) {
+        const result = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password: normalizedPassword,
+          options: {
+            emailRedirectTo: redirectTo,
+          },
+        });
+
+        if (!result.error) {
+          data = result.data;
+          signupError = null;
+          break;
+        }
+
+        lastError = result.error;
+        signupError = result.error;
+        if (!shouldRetrySignupWithoutRedirect(result.error)) {
+          break;
+        }
+      }
+
+      if (!data && shouldRetrySignupWithoutRedirect(signupError)) {
+        const fallbackResult = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password: normalizedPassword,
+        });
+
+        if (fallbackResult.error) {
+          throw fallbackResult.error || lastError;
+        }
+
+        data = fallbackResult.data;
+      }
+
+      if (!data) {
+        throw signupError || lastError || new Error("Signup gagal.");
       }
 
       const requiresEmailConfirmation = !data.session || !data.user?.email_confirmed_at;

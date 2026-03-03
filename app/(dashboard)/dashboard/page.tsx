@@ -8,6 +8,7 @@ import { Suspense } from 'react';
 
 export default function DashboardPage() {
   const { totalPaps, currentStreak, totalPresets, loading } = useStats();
+  const isStatsEmpty = !loading && totalPaps === 0 && currentStreak === 0 && totalPresets === 0;
 
   
   return ( 
@@ -16,6 +17,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 lg:flex lg:flex-row gap-4 md:gap-6">
         {loading ? (
           <StatsSkeleton count={3} />
+        ) : isStatsEmpty ? (
+          <div className="col-span-2 lg:flex-1 h-32 rounded-3xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center">
+            <p className="text-sm md:text-base font-bold text-gray-500">tidak ada stats</p>
+          </div>
         ) : (
           <>
             <StatCard 

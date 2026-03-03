@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './useAuth';
 
@@ -23,8 +23,18 @@ export const useStats = () => {
 
   const pairId = user?.me?.pair_id;
 
-  const fetchStats = async () => {
-    if (!pairId) return;
+  const fetchStats = useCallback(async () => {
+    if (!pairId) {
+      setStats({
+        totalPaps: 0,
+        totalPresets: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        lastPapDate: null,
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -34,7 +44,7 @@ export const useStats = () => {
         .from('pair_stats')
         .select('total_pap, total_reaction, streak_current, streak_best, last_pap_date')
         .eq('pair_id', pairId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -46,19 +56,25 @@ export const useStats = () => {
           bestStreak: data.streak_best || 0,
           lastPapDate: data.last_pap_date || null,
         });
+      } else {
+        setStats({
+          totalPaps: 0,
+          totalPresets: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          lastPapDate: null,
+        });
       }
     } catch (err) {
       console.error("Stats Error:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [pairId]);
 
   useEffect(() => {
-    if (pairId) {
-      fetchStats();
-    }
-  }, [pairId]);
+    void fetchStats();
+  }, [fetchStats]);
 
   return { ...stats, loading, refresh: fetchStats };
 };

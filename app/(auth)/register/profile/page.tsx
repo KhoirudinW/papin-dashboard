@@ -25,6 +25,7 @@ function page() {
         className="absolute bottom-0 left-0 -z-10 h-auto w-[240px] opacity-50 md:w-[400px] md:opacity-100"
         alt="bg login 1"
         sizes="(max-width: 768px) 240px, 400px"
+        priority
       />
     </section>
   );

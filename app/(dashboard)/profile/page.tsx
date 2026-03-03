@@ -28,60 +28,43 @@ interface UserProfile {
   [key: string]: unknown; 
 }
 
-type DummyUnpairedProfile = {
+type SingleCandidateProfile = {
   id: string;
-  name: string;
-  full_name: string;
+  name: string | null;
+  full_name: string | null;
   role: "A" | "B";
-  age: number;
+  birthday: string | null;
   hobbies: string;
-  bio: string;
+  bio: string | null;
+  photo_url: string | null;
 };
-
-const DUMMY_UNPAIRED_PROFILES: DummyUnpairedProfile[] = [
-  {
-    id: "DUMMY-001",
-    name: "nanda.arti",
-    full_name: "Nanda Arti Pratama",
-    role: "A",
-    age: 25,
-    hobbies: "Futsal, Gaming, Kuliner",
-    bio: "Santai, suka ngobrol, lagi cari pasangan yang nyambung.",
-  },
-  {
-    id: "DUMMY-002",
-    name: "mira.nov",
-    full_name: "Mira Novitasari",
-    role: "B",
-    age: 23,
-    hobbies: "Memasak, Film, Traveling",
-    bio: "Suka hal sederhana, cari partner yang serius dan suportif.",
-  },
-  {
-    id: "DUMMY-003",
-    name: "arya.w",
-    full_name: "Arya Wibowo",
-    role: "A",
-    age: 27,
-    hobbies: "Badminton, Musik, Motoran",
-    bio: "Open-minded, easygoing, siap kenalan lebih lanjut.",
-  },
-  {
-    id: "DUMMY-004",
-    name: "livia.kaa",
-    full_name: "Livia Kaavya",
-    role: "B",
-    age: 24,
-    hobbies: "Fotografi, Cafe hopping, Membaca",
-    bio: "Suka quality time dan komunikasi yang jujur.",
-  },
-];
 
 const stringifyHobbies = (value: unknown): string => {
   if (Array.isArray(value)) {
     return value.map((item) => String(item)).join(", ");
   }
   return String(value || "");
+};
+
+const calculateAge = (birthday: string | null | undefined) => {
+  if (!birthday) {
+    return null;
+  }
+
+  const birthDate = new Date(birthday);
+  if (Number.isNaN(birthDate.getTime())) {
+    return null;
+  }
+
+  const now = new Date();
+  let age = now.getFullYear() - birthDate.getFullYear();
+  const monthDiff = now.getMonth() - birthDate.getMonth();
+  const dayDiff = now.getDate() - birthDate.getDate();
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age -= 1;
+  }
+
+  return age >= 0 ? age : null;
 };
 
 function ProfileContent() {
@@ -109,6 +92,13 @@ function ProfileContent() {
   const [newAuthPassword, setNewAuthPassword] = useState("");
   const [newAuthPasswordConfirm, setNewAuthPasswordConfirm] = useState("");
   const [authCreating, setAuthCreating] = useState(false);
+  const [singleCandidates, setSingleCandidates] = useState<SingleCandidateProfile[]>([]);
+  const [singleCandidatesLoading, setSingleCandidatesLoading] = useState(false);
+  const [pairingRequestingId, setPairingRequestingId] = useState<string | null>(null);
+  const [pairingFeedback, setPairingFeedback] = useState<{ type: "idle" | "success" | "error"; message: string }>({
+    type: "idle",
+    message: "",
+  });
 
   const [profileData, setProfileData] = useState<{ Man: UserProfile; Woman: UserProfile }>({
     Man: {},
@@ -138,20 +128,34 @@ function ProfileContent() {
     
     try {
       setFetching(true);
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('pair_id', user.me.pair_id);
+      const { data: pairRaw, error } = await supabase
+        .from("pairs")
+        .select("id, user_profiles(*)")
+        .eq("id", user.me.pair_id)
+        .limit(1)
+        .maybeSingle();
 
       if (error) throw error;
 
-      if (data) {
-        const manData = data.find(p => p.role === 'A') || {};
-        const womanData = data.find(p => p.role === 'B') || {};
+      const pairProfiles = Array.isArray(
+        (pairRaw as { user_profiles?: Array<Record<string, unknown>> } | null)?.user_profiles,
+      )
+        ? ((pairRaw as { user_profiles?: Array<Record<string, unknown>> }).user_profiles || [])
+        : [];
+
+      if (pairProfiles.length > 0) {
+        const manData = (pairProfiles.find((p) => p.role === "A") || {}) as UserProfile;
+        const womanData = (pairProfiles.find((p) => p.role === "B") || {}) as UserProfile;
         
         setProfileData({
-          Man: manData,
-          Woman: womanData
+          Man: {
+            ...manData,
+            hobbies: stringifyHobbies(manData.hobbies),
+          },
+          Woman: {
+            ...womanData,
+            hobbies: stringifyHobbies(womanData.hobbies),
+          }
         });
       }
     } catch (err) {
@@ -203,18 +207,83 @@ function ProfileContent() {
     void loadAuthEmailStatus();
   }, [loadAuthEmailStatus]);
 
+  const getAuthHeader = useCallback(async (): Promise<Record<string, string>> => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, []);
+
   const isMyProfile = user?.me?.role === (activeGender === 'Man' ? 'A' : 'B');
-  const hasPartner = Boolean(user?.me?.pair_id && user?.partner?.id);
+  const hasPartner = Boolean(user?.me?.pair_id);
   const showSingleCandidates = !hasPartner && !isMyProfile;
-  const filteredSingleCandidates = DUMMY_UNPAIRED_PROFILES.filter((item) => {
-    if (user?.me?.role === "A") {
-      return item.role === "B";
+
+  const loadSingleCandidates = useCallback(async () => {
+    const myProfileId = user?.me?.id;
+    const myRole = user?.me?.role;
+    const myPairId = user?.me?.pair_id;
+
+    if (!myProfileId || !myRole || myPairId) {
+      setSingleCandidates([]);
+      setSingleCandidatesLoading(false);
+      return;
     }
-    if (user?.me?.role === "B") {
-      return item.role === "A";
+
+    const targetRole = myRole === "A" ? "B" : myRole === "B" ? "A" : null;
+    if (!targetRole) {
+      setSingleCandidates([]);
+      setSingleCandidatesLoading(false);
+      return;
     }
-    return true;
-  });
+
+    setSingleCandidatesLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("id, name, full_name, role, birthday, hobbies, bio, photo_url, pair_id")
+        .is("pair_id", null)
+        .eq("role", targetRole)
+        .neq("id", myProfileId)
+        .limit(50);
+
+      if (error) {
+        throw error;
+      }
+
+      const rows = ((data || []) as Array<{
+        id: string;
+        name: string | null;
+        full_name: string | null;
+        role: string | null;
+        birthday: string | null;
+        hobbies: unknown;
+        bio: string | null;
+        photo_url: string | null;
+      }>).filter((item) => item.role === "A" || item.role === "B");
+
+      const mapped: SingleCandidateProfile[] = rows.map((item) => ({
+        id: item.id,
+        name: item.name,
+        full_name: item.full_name,
+        role: item.role as "A" | "B",
+        birthday: item.birthday,
+        hobbies: stringifyHobbies(item.hobbies),
+        bio: item.bio,
+        photo_url: item.photo_url,
+      }));
+
+      setSingleCandidates(mapped);
+    } catch (error) {
+      console.error("Error fetching single candidates:", error);
+      setSingleCandidates([]);
+    } finally {
+      setSingleCandidatesLoading(false);
+    }
+  }, [user?.me?.id, user?.me?.pair_id, user?.me?.role]);
+
+  useEffect(() => {
+    void loadSingleCandidates();
+  }, [loadSingleCandidates]);
+
   const currentProfile = (() => {
     const selected = profileData[activeGender];
     if (selected && Object.keys(selected).length > 0) {
@@ -232,6 +301,62 @@ function ProfileContent() {
   })();
   const hasLinkedAuth = Boolean(user?.me?.auth_user_id);
   const needsAuthSetup = !canManageAuthEmail && !hasLinkedAuth;
+
+  const handlePairingCandidate = async (targetProfileId: string) => {
+    const requesterProfileId = user?.me?.id;
+    if (!requesterProfileId) {
+      setPairingFeedback({ type: "error", message: "Profile kamu tidak ditemukan. Silakan login ulang." });
+      return;
+    }
+
+    if (user?.me?.pair_id) {
+      setPairingFeedback({ type: "error", message: "Kamu sudah punya pasangan aktif." });
+      return;
+    }
+
+    setPairingRequestingId(targetProfileId);
+    setPairingFeedback({ type: "idle", message: "" });
+
+    try {
+      const authHeader = await getAuthHeader();
+      const response = await fetch("/api/pairing/direct", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader,
+        },
+        body: JSON.stringify({
+          requesterProfileId,
+          targetProfileId,
+        }),
+      });
+
+      const payload = (await response.json()) as { message?: string; pairId?: string; pairCode?: string };
+      if (!response.ok) {
+        throw new Error(payload.message || "Gagal melakukan pairing.");
+      }
+
+      setPairingFeedback({
+        type: "success",
+        message: payload.message || "Pairing berhasil.",
+      });
+      updateUser({
+        pair_id: payload.pairId || null,
+        pair_code: payload.pairCode || "",
+        pair_code_plain: payload.pairCode || "",
+      });
+      setSingleCandidates((prev) => prev.filter((item) => item.id !== targetProfileId));
+      await fetchLatestData();
+      router.refresh();
+    } catch (error: unknown) {
+      setPairingFeedback({
+        type: "error",
+        message: error instanceof Error ? error.message : "Gagal melakukan pairing.",
+      });
+    } finally {
+      setPairingRequestingId(null);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setProfileData(prev => ({
@@ -607,32 +732,59 @@ function ProfileContent() {
                 </div>
                 <h3 className="text-lg font-black text-primary">Daftar Profile Single</h3>
                 <p className="text-xs text-gray-500">
-                  Form pasangan digantikan list calon pasangan (dummy data).
+                  Form pasangan digantikan list calon pasangan dari data user asli.
                 </p>
+                {pairingFeedback.type !== "idle" && (
+                  <div
+                    className={`rounded-2xl border p-3 text-xs font-semibold ${
+                      pairingFeedback.type === "success"
+                        ? "border-green-100 bg-green-50 text-green-700"
+                        : "border-red-100 bg-red-50 text-red-600"
+                    }`}
+                  >
+                    {pairingFeedback.message}
+                  </div>
+                )}
                 <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
-                  {filteredSingleCandidates.map((item) => (
+                  {singleCandidatesLoading && (
+                    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm flex items-center gap-2 text-xs text-gray-500 font-semibold">
+                      <Loader2 size={14} className="animate-spin text-primary" />
+                      Memuat data profile single...
+                    </div>
+                  )}
+                  {!singleCandidatesLoading && singleCandidates.map((item) => (
                     <div
                       key={item.id}
                       className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="font-black text-primary text-sm">{item.full_name}</p>
-                          <p className="text-xs text-gray-500">@{item.name}</p>
+                          <p className="font-black text-primary text-sm">{item.full_name || "Tanpa Nama"}</p>
+                          <p className="text-xs text-gray-500">@{item.name || "-"}</p>
                         </div>
                         <span className="text-[10px] font-black px-2 py-1 rounded-full bg-pink-50 text-primary border border-pink-100">
-                          {item.role === "A" ? "Man" : "Woman"} • {item.age} th
+                          {item.role === "A" ? "Man" : "Woman"}
+                          {calculateAge(item.birthday) !== null ? ` | ${calculateAge(item.birthday)} th` : ""}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600 mt-3">
-                        <span className="font-bold">Hobi:</span> {item.hobbies}
+                        <span className="font-bold">Hobi:</span> {item.hobbies || "-"}
                       </p>
-                      <p className="text-xs text-gray-600 mt-1">{item.bio}</p>
+                      <p className="text-xs text-gray-600 mt-1">{item.bio || "-"}</p>
+                      <button
+                        type="button"
+                        onClick={() => void handlePairingCandidate(item.id)}
+                        disabled={Boolean(pairingRequestingId)}
+                        className="mt-4 w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider bg-primary text-white hover:brightness-110 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {pairingRequestingId === item.id ? <Loader2 size={14} className="animate-spin" /> : null}
+                        {pairingRequestingId === item.id ? "Mengirim..." : "Pairing"}
+                      </button>
                     </div>
                   ))}
-                  {filteredSingleCandidates.length === 0 && (
+                  {!singleCandidatesLoading && singleCandidates.length === 0 && (
                     <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4 text-xs text-gray-500 font-semibold">
-                      Belum ada kandidat lawan jenis di dummy data.
+                      Belum ada kandidat single lawan jenis saat ini.
                     </div>
                   )}
                 </div>
@@ -856,5 +1008,3 @@ function TutorialStep({ number, text }: { number: string, text: string }) {
     </li>
   );
 }
-
-

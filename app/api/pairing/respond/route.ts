@@ -31,6 +31,10 @@ const isProfileOwnedByAuth = (profile: ProfileRow, auth: { id: string; email: st
   return profile.auth_user_id === auth.id || (Boolean(profileEmail) && profileEmail === auth.email);
 };
 
+const isGenderRoleValid = (role: string | null | undefined): role is "A" | "B" => {
+  return role === "A" || role === "B";
+};
+
 const generatePlainPairCode = () => `PAP${Math.floor(100000 + Math.random() * 900000)}`;
 
 export async function POST(request: Request) {
@@ -129,6 +133,20 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!isGenderRoleValid(requesterProfile.role) || !isGenderRoleValid(responderProfile.role)) {
+      return NextResponse.json(
+        { message: "Pairing hanya bisa diproses jika kedua user punya gender valid." },
+        { status: 409 },
+      );
+    }
+
+    if (requesterProfile.role === responderProfile.role) {
+      return NextResponse.json(
+        { message: "Pairing hanya bisa antar user single dengan gender berbeda." },
+        { status: 409 },
+      );
+    }
+
     const plainPairCode = generatePlainPairCode();
     const hashedPairCode = bcrypt.hashSync(plainPairCode, bcrypt.genSaltSync(10));
 
@@ -145,8 +163,8 @@ export async function POST(request: Request) {
       throw pairError || new Error("Gagal membuat data pair baru.");
     }
 
-    const requesterRole = requesterProfile.role === "A" || requesterProfile.role === "B" ? requesterProfile.role : "A";
-    const responderRole = requesterRole === "A" ? "B" : "A";
+    const requesterRole = requesterProfile.role;
+    const responderRole = responderProfile.role;
 
     const { error: requesterUpdateError } = await supabaseAdmin
       .from("user_profiles")

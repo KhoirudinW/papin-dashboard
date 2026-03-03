@@ -4,6 +4,7 @@ import { getApiAuthUser } from "@/lib/apiAuth";
 
 type RequestBody = {
   requesterProfileId?: string;
+  targetProfileId?: string;
   targetIdentifier?: string;
   note?: string;
 };
@@ -14,11 +15,16 @@ type UserProfileRow = {
   name: string | null;
   pair_id: string | null;
   auth_user_id: string | null;
+  role: string | null;
 };
 
 const isProfileOwnedByAuth = (profile: UserProfileRow, auth: { id: string; email: string }) => {
   const profileEmail = (profile.email || "").trim().toLowerCase();
   return profile.auth_user_id === auth.id || (Boolean(profileEmail) && profileEmail === auth.email);
+};
+
+const isGenderRoleValid = (role: string | null | undefined): role is "A" | "B" => {
+  return role === "A" || role === "B";
 };
 
 const findTargetProfile = async (targetIdentifier: string) => {
@@ -29,7 +35,7 @@ const findTargetProfile = async (targetIdentifier: string) => {
   if (isEmail) {
     const { data, error } = await supabaseAdmin
       .from("user_profiles")
-      .select("id, email, name, pair_id, auth_user_id")
+      .select("id, email, name, pair_id, auth_user_id, role")
       .eq("email", normalized.toLowerCase())
       .limit(10);
 
@@ -42,9 +48,24 @@ const findTargetProfile = async (targetIdentifier: string) => {
 
   const { data, error } = await supabaseAdmin
     .from("user_profiles")
-    .select("id, email, name, pair_id, auth_user_id")
+    .select("id, email, name, pair_id, auth_user_id, role")
     .ilike("name", normalized.toLowerCase())
     .limit(10);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data || []) as UserProfileRow[];
+};
+
+const findTargetProfileById = async (targetProfileId: string) => {
+  const supabaseAdmin = getSupabaseAdmin();
+  const { data, error } = await supabaseAdmin
+    .from("user_profiles")
+    .select("id, email, name, pair_id, auth_user_id, role")
+    .eq("id", targetProfileId)
+    .limit(1);
 
   if (error) {
     throw error;
@@ -62,12 +83,13 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as RequestBody;
     const requesterProfileId = body.requesterProfileId?.trim();
+    const targetProfileId = body.targetProfileId?.trim();
     const targetIdentifier = body.targetIdentifier?.trim();
     const note = body.note?.trim() || null;
 
-    if (!requesterProfileId || !targetIdentifier) {
+    if (!requesterProfileId || (!targetProfileId && !targetIdentifier)) {
       return NextResponse.json(
-        { message: "Data pairing tidak lengkap. Isi username/email pasangan." },
+        { message: "Data pairing tidak lengkap. Isi user target pairing." },
         { status: 400 },
       );
     }
@@ -76,7 +98,7 @@ export async function POST(request: Request) {
 
     const { data: requesterRaw, error: requesterError } = await supabaseAdmin
       .from("user_profiles")
-      .select("id, email, name, pair_id, auth_user_id")
+      .select("id, email, name, pair_id, auth_user_id, role")
       .eq("id", requesterProfileId)
       .limit(1)
       .maybeSingle();
@@ -97,7 +119,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const targetCandidates = (await findTargetProfile(targetIdentifier)).filter(
+    if (!isGenderRoleValid(requester.role)) {
+      return NextResponse.json(
+        { message: "Profil kamu belum punya gender yang valid. Lengkapi profile dulu." },
+        { status: 409 },
+      );
+    }
+
+    if (targetProfileId && targetProfileId === requester.id) {
+      return NextResponse.json(
+        { message: "Tidak bisa mengirim pairing request ke profile sendiri." },
+        { status: 409 },
+      );
+    }
+
+    const targetCandidates = (
+      targetProfileId
+        ? await findTargetProfileById(targetProfileId)
+        : await findTargetProfile(targetIdentifier || "")
+    ).filter(
       (item) => item.id !== requester.id,
     );
 
@@ -116,6 +156,20 @@ export async function POST(request: Request) {
     if (target.pair_id) {
       return NextResponse.json(
         { message: "User target sudah memiliki pasangan." },
+        { status: 409 },
+      );
+    }
+
+    if (!isGenderRoleValid(target.role)) {
+      return NextResponse.json(
+        { message: "User target belum punya gender yang valid untuk pairing." },
+        { status: 409 },
+      );
+    }
+
+    if (requester.role === target.role) {
+      return NextResponse.json(
+        { message: "Pairing hanya bisa antar user single dengan gender berbeda." },
         { status: 409 },
       );
     }
